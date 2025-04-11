@@ -1,13 +1,42 @@
 <?php
+// Start the session
+session_start();
+
 require_once 'controllers/DashboardController.php';
 require_once 'controllers/CardController.php';
 require_once 'controllers/BankController.php';
 require_once 'controllers/ReportController.php';
 require_once 'controllers/UserController.php';
+require_once 'controllers/AuthController.php';
 
 $path = $_GET['path'] ?? 'dashboard';
 
+// Create an instance of AuthController for authentication checks
+$authController = new AuthController();
+
+// Define routes that don't require authentication
+$publicRoutes = ['auth/login', 'auth/process_login', 'auth/logout'];
+
+// Check if the current route requires authentication
+if (!in_array($path, $publicRoutes)) {
+    $authController->requireAuth();
+}
+
 switch ($path) {
+    // Authentication routes
+    case 'auth/login':
+        $authController->showLoginForm();
+        break;
+        
+    case 'auth/process_login':
+        $authController->login();
+        break;
+        
+    case 'auth/logout':
+        $authController->logout();
+        break;
+
+    // Existing routes
     case 'dashboard':
         $controller = new DashboardController();
         $controller->index();
