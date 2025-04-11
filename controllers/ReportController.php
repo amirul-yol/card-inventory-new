@@ -1,0 +1,418 @@
+<?php
+require_once 'models/ReportModel.php';
+require_once 'models/TransactionModel.php';
+
+
+class ReportController {
+    
+    public function index() {
+        $model = new ReportModel();
+        $banks = $model->getBanks();
+        include 'views/report/index.php';
+    }
+
+    public function withdraw() {
+        $model = new ReportModel();
+        $banks = $model->getBanks();
+        include 'views/report/withdraw.php';
+    }
+
+
+    public function bankReports() {
+    
+        // Validate and sanitize `id`
+        $bankId = isset($_GET['bank_id']) ? (int) $_GET['bank_id'] : null;
+    
+        if (!$bankId) {
+            die("Bank ID is missing or invalid.");
+        }
+    
+        $reportModel = new ReportModel();
+        $bank = $reportModel->getBankById($bankId);
+    
+        if (!$bank) {
+            die("Bank not found.");
+        }
+    
+        $reports = $reportModel->getReportsByBank($bankId);
+    
+        include 'views/report/bank_reports.php';
+    }
+    
+    public function withdrawCard() {
+        $cardId = $_GET['card_id'] ?? null;
+        $bankId = $_GET['bank_id'] ?? null;
+    
+        if (!$bankId) {
+            die('Bank ID is missing.');
+        }
+    
+        $reportModel = new ReportModel();
+        $bank = $reportModel->getBankById($bankId);
+        $cards = $reportModel->getCardsByBankId($bankId);
+    
+        // Check withdrawals for each card for the current date
+        $currentDate = date('Y-m-d');
+        foreach ($cards as &$card) {
+            $card['withdrawal'] = $reportModel->getCardWithdrawalDetails($cardId, $currentDate);
+        }
+    
+        require_once 'views/report/withdraw.php';
+    }
+    
+    public function editWithdrawal() {
+        $withdrawalId = $_GET['withdrawal_id'] ?? null;
+        if (!$withdrawalId) {
+            die("Withdrawal ID is missing.");
+        }
+    
+        $withdrawal = $this->reportModel->getWithdrawalById($withdrawalId);
+        if (!$withdrawal) {
+            die("Withdrawal not found.");
+        }
+    
+        include 'views/report/edit_withdrawal_form.php';
+    }
+
+    public function processWithdraw() {
+        // Get POST data
+        $cardId = $_POST['card_id'] ?? null;
+        $bankId = $_POST['bank_id'] ?? null;
+        $quantity = $_POST['quantity'] ?? null;
+        $date = $_POST['date'] ?? null;
+        $remarks = $_POST['remarks'] ?? null;
+    
+        // Validate inputs
+        if (!$cardId || !$bankId || !$quantity || !$date || !$remarks) {
+            die("All fields are required.");
+        }
+    
+        // Prepare transaction details
+        $transactionType = 'withdraw'; // Fixed for this operation
+        $rejectType = null; // No reject type for withdrawal
+        $verified = null; // Verified is null for now
+    
+        $reportModel = new ReportModel();
+    
+        if ($reportModel->withdrawCard($cardId, $bankId, $quantity, $remarks, $date)) {
+            // Redirect to the withdraw page
+            header("Location: ?path=report/withdrawCard&bank_id=$bankId&status=success");
+            exit;
+        } else {
+            die("Failed to process withdrawal.");
+        }
+    }
+    
+    public function withdrawCardForm() {
+        $cardId = $_GET['card_id'] ?? null;
+        $bankId = $_GET['bank_id'] ?? null;
+    
+        if (!$cardId || !$bankId) {
+            die("Missing parameters.");
+        }
+    
+        $reportModel = new ReportModel();
+        $card = $reportModel->getCardById($cardId);
+    
+        include 'views/report/withdraw_card_form.php'; // Form for withdrawal
+    }
+    
+    public function editWithdrawalForm() {
+        $cardId = $_GET['card_id'] ?? null;
+        $bankId = $_GET['bank_id'] ?? null;
+    
+        if (!$cardId || !$bankId) {
+            die("Missing card_id or bank_id.");
+        }
+    
+        $currentDate = date('Y-m-d');
+        $reportModel = new ReportModel();
+    
+        $withdrawal = $reportModel->getCardWithdrawalDetails($cardId, $currentDate);
+        if (!$withdrawal) {
+            die("Invalid withdrawal data.");
+        }
+    
+        require_once 'views/report/edit_withdrawal_form.php';
+    }
+    
+    public function processWithdrawEdit() {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $withdrawalId = $_POST['withdrawal_id'] ?? null;
+            $bankId = $_POST['bank_id'] ?? null;
+            $newQuantity = $_POST['quantity'] ?? null;
+            $date = $_POST['date'] ?? null;
+    
+            if (!$withdrawalId || !$bankId || !$newQuantity || !$date) {
+                die("Missing required fields.");
+            }
+    
+            // Load the ReportModel
+            $reportModel = new ReportModel();
+    
+            // Get the existing withdrawal details
+            $existingWithdrawal = $reportModel->getWithdrawalById($withdrawalId);
+    
+            if (!$existingWithdrawal) {
+                die("Withdrawal record not found.");
+            }
+    
+            // Calculate the quantity difference
+            $oldQuantity = $existingWithdrawal['quantity'];
+            $quantityDifference = $newQuantity - $oldQuantity;
+    
+            // Update the withdrawal record
+            $updateSuccess = $reportModel->updateWithdrawal($withdrawalId, $newQuantity, $date);
+    
+            if (!$updateSuccess) {
+                die("Failed to update the withdrawal record.");
+            }
+    
+            // Update the card's quantity
+            $cardId = $existingWithdrawal['card_id']; // Assuming `card_id` exists in the withdrawal record
+            $updateCardSuccess = $reportModel->updateCardQuantity($cardId, -$quantityDifference); // Subtract difference
+    
+            if (!$updateCardSuccess) {
+                die("Failed to update the card's quantity.");
+            }
+    
+            // Redirect back with success message
+            header("Location: index.php?path=report/withdrawCard&bank_id=$bankId");
+            exit;
+        } else {
+            die("Invalid request method.");
+        }
+    }
+    
+    public function submitWithdrawReport() {
+        if (isset($_GET['bank_id'])) {
+            $bankId = intval($_GET['bank_id']);
+            $date = date('Y-m-d');
+    
+            $reportModel = new ReportModel();
+            $transactionModel = new TransactionModel();
+    
+            // Generate a new report for the bank
+            $reportId = $reportModel->createReport($bankId, $date);
+    
+            if ($reportId) {
+                // Update all unreported transactions with the new report_id
+                $updateSuccess = $transactionModel->assignReportToTransactions($bankId, $date, $reportId);
+    
+                if ($updateSuccess) {
+                    // Redirect to bank_reports.php with a success message
+                    header("Location: bank_reports.php?bank_id=$bankId&success=withdraw_completed");
+                    exit;
+                } else {
+                    // Redirect with an error message if transactions update failed
+                    header("Location: bank_reports.php?bank_id=$bankId&error=transaction_update_failed");
+                    exit;
+                }
+            } else {
+                // Redirect with an error message if report generation failed
+                header("Location: bank_reports.php?bank_id=$bankId&error=report_creation_failed");
+                exit;
+            }
+        } else {
+            // Redirect with an error message if bank_id is missing
+            header("Location: bank_reports.php?error=missing_bank_id");
+            exit;
+        }
+    }
+
+    
+
+    public function submitVerification() {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            die("Invalid request method.");
+        }
+    
+        $reportId = intval($_POST['report_id']);
+    
+        $reportModel = new ReportModel();
+        $transactionModel = new TransactionModel();
+    
+        // Fetch the report to check its status
+        $report = $reportModel->getReportById($reportId);
+        if (!$report) {
+            die("Report not found.");
+        }
+    
+        if ($report['status'] === 'verified') {
+            die("This report has already been verified.");
+        }
+    
+        // Fetch unverified transactions for the report
+        $transactions = $transactionModel->getUnverifiedTransactions($reportId);
+        if (empty($transactions)) {
+            // If no unverified transactions, mark the report as verified
+            $reportModel->markReportVerified($reportId);
+            echo "Verification completed successfully. Report marked as verified.";
+            return;
+        }
+    
+        // Verify all transactions associated with the report
+        foreach ($transactions as $transaction) {
+            $transactionModel->markTransactionVerified($transaction['id']);
+        }
+    
+        // Mark the report as verified
+        $reportModel->markReportVerified($reportId);
+    
+        echo "Verification completed successfully.";
+    }
+    
+    
+    public function finishWithdraw() {
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            // Retrieve bank_id from the POST request
+            $bankId = intval($_POST['bank_id']);
+            $date = date('Y-m-d');
+    
+            $reportModel = new ReportModel();
+            $transactionModel = new TransactionModel();
+    
+            // Generate a new report for the bank
+            $reportId = $reportModel->createReport($bankId, $date);
+    
+            if ($reportId) {
+                // Update all unreported transactions with the new report_id
+                $updateSuccess = $transactionModel->assignReportToTransactions($bankId, $date, $reportId);
+    
+                if ($updateSuccess) {
+                    // Redirect to bank_reports.php with success message
+                    header("Location: bank_reports.php?bank_id=$bankId&success=withdraw_completed");
+                    exit;
+                } else {
+                    echo "Failed to update transactions with the new report.";
+                }
+            } else {
+                echo "Failed to generate a new report.";
+            }
+        }
+    }
+    
+    public function verify()
+    {
+        $reportModel = new ReportModel();
+
+        if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['verify_report'])) {
+            $bankId = intval($_POST['bank_id']);
+            $reportId = intval($_POST['report_id']);
+            $rejectedAmounts = $_POST['rejected_amount'] ?? [];
+
+            // Process rejected amounts if provided
+            foreach ($rejectedAmounts as $transactionId => $rejectedAmount) {
+                $reason = $_POST['rejection_reason'][$transactionId] ?? 'Unknown';
+                $reportModel->addRejection($transactionId, intval($rejectedAmount), $reason);
+            }
+
+            // Mark the report as verified
+            $reportModel->markReportVerified($reportId);
+
+            // Redirect back to the report page with a success message
+            header("Location: index.php?path=report/bankReports&bank_id=$bankId&status=verified");
+            exit();
+        }
+
+        // Fetch transactions and load the verify view
+        $bankId = intval($_GET['bank_id']);
+        $reportId = intval($_GET['report_id']);
+        $transactions = $reportModel->getTransactionsForReport($reportId);
+
+        include 'views/report/verify.php';
+    }
+
+    public function verifyWithdrawReport()
+    {
+        $reportModel = new ReportModel();
+
+        if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['verify_report'])) {
+            $bankId = intval($_POST['bank_id']);
+            $reportId = intval($_POST['report_id']);
+            $rejectedAmounts = $_POST['rejected_amount'] ?? [];
+
+            // Process rejected amounts if provided
+            foreach ($rejectedAmounts as $transactionId => $rejectedAmount) {
+                $reason = $_POST['rejection_reason'][$transactionId] ?? 'Unknown';
+                $reportModel->addRejection($transactionId, intval($rejectedAmount), $reason);
+            }
+
+            // Mark the report as verified
+            $reportModel->markReportVerified($reportId);
+
+            // Redirect back to the bank reports page with a success message
+            header("Location: index.php?path=report/bankReports&bank_id=$bankId&status=verified");
+            exit();
+        }
+
+        // Fetch transactions and load the verify view
+        $bankId = intval($_GET['bank_id']);
+        $reportId = intval($_GET['report_id']);
+        $transactions = $reportModel->getTransactionsForReport($reportId);
+
+        include 'views/report/verify.php';
+    }
+    
+    
+    public function rejectCard()
+    {
+        $transactionId = isset($_POST['transaction_id']) ? intval($_POST['transaction_id']) : (isset($_GET['transaction_id']) ? intval($_GET['transaction_id']) : null);
+
+        if (!$transactionId) {
+            die("Transaction ID is required.");
+        }
+
+        $reportModel = new ReportModel();
+        $transaction = $reportModel->getTransactionById($transactionId);
+
+        if (!$transaction) {
+            die("Transaction not found.");
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $transactionId = intval($_POST['transaction_id']);
+            $rejectedAmount = intval($_POST['rejected_amount']);
+            $reason = $_POST['reason'];
+            $bankId = intval($_POST['bank_id']);
+            $reportId = intval($_POST['report_id']);
+
+            $reportModel = new ReportModel();
+            $transaction = $reportModel->getTransactionById($transactionId);
+
+            if (!$transaction) {
+                die("Transaction not found.");
+            }
+
+            if ($rejectedAmount <= 0 || $rejectedAmount > $transaction['quantity']) {
+                die("Invalid rejected amount.");
+            }
+            if (!in_array($reason, ['System Error', 'Quality Error'])) {
+                die("Invalid rejection reason.");
+            }
+
+            // Record rejection
+            $reportModel->addRejection($transactionId, $rejectedAmount, $reason);
+
+            // Adjust card inventory only
+            $cardId = $transaction['card_id'];
+            $reportModel->updateCardQuantity($cardId, -$rejectedAmount); 
+
+            // Redirect to verify page
+            header("Location: index.php?path=report/verifyWithdrawReport&bank_id=$bankId&report_id=$reportId");
+            exit();
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+            $bankId = intval($_GET['bank_id']);
+            $reportId = intval($_GET['report_id']);
+
+            // Redirect to the reject_card view
+            include 'views/report/reject_card.php';
+            exit();
+        }
+
+        include 'views/report/reject_card.php';
+    }
+}
+?>
