@@ -12,6 +12,7 @@ $reportModel = new ReportModel();
 // Create Auth Controller instance to check user roles
 $authController = new AuthController();
 $isLO = $authController->isLogisticsOfficer();
+$isPO = $authController->isProductionOfficer();
 
 // Fetch bank details
 $bank = $reportModel->getBankById($bankId);
@@ -26,7 +27,7 @@ $reports = $reportModel->getReportsByBank($bankId);
 <?php include 'views/includes/sidebar.php'; ?>
 
 <style>
-    .withdraw-btn.disabled {
+    .withdraw-btn.disabled, .btn-action.disabled {
         opacity: 0.6;
         cursor: not-allowed;
         pointer-events: none;
@@ -95,7 +96,7 @@ $reports = $reportModel->getReportsByBank($bankId);
                 <tr>
                     <th>Date</th>
                     <th>Status</th>
-                    <th>Details</th>
+                    <!-- <th>Details</th> -->
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -104,10 +105,17 @@ $reports = $reportModel->getReportsByBank($bankId);
                     <tr>
                         <td><?= htmlspecialchars($report['report_date'] ?? 'N/A'); ?></td>
                         <td><?= htmlspecialchars($report['status'] ?? 'N/A'); ?></td>
-                        <td><?= htmlspecialchars($report['details'] ?? 'No Details Available'); ?></td>
+                        <!-- <td><?= htmlspecialchars($report['details'] ?? 'No Details Available'); ?></td> -->
 
                         <td>
-                            <a href="index.php?path=report/verify&report_id=<?= $report['id']; ?>&bank_id=<?= $bank['bank_id']; ?>" class="btn btn-action">Verify</a>
+                            <?php if ($isPO): ?>
+                                <a href="index.php?path=report/verify&report_id=<?= $report['id']; ?>&bank_id=<?= $bank['bank_id']; ?>" class="btn btn-action">Verify</a>
+                            <?php else: ?>
+                                <div class="tooltip">
+                                    <a class="btn btn-action disabled">Verify</a>
+                                    <span class="tooltip-text">Only Production Officers can verify reports</span>
+                                </div>
+                            <?php endif; ?>
                             <a href="index.php?path=report/download&report_id=<?= $report['id']; ?>" class="btn btn-action">Generate Report</a>
                         </td>
                     </tr>

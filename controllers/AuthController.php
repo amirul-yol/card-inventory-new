@@ -99,5 +99,10 @@ class AuthController {
     public function isLogisticsOfficer() {
         return $this->hasRole(4); // Role ID 4 is for LO
     }
+    
+    // Check if the current user is a Production Officer (PO)
+    public function isProductionOfficer() {
+        return $this->hasRole(3); // Role ID 3 is for PO
+    }
 }
 ?> 
