@@ -89,5 +89,15 @@ class AuthController {
             exit;
         }
     }
+    
+    // Check if the current user has a specific role
+    public function hasRole($roleId) {
+        return $this->isLoggedIn() && $_SESSION['user_role'] == $roleId;
+    }
+    
+    // Check if the current user is a Logistics Officer (LO)
+    public function isLogisticsOfficer() {
+        return $this->hasRole(4); // Role ID 4 is for LO
+    }
 }
 ?> 

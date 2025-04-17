@@ -1,5 +1,6 @@
 <?php
 require_once 'models/ReportModel.php';
+require_once 'controllers/AuthController.php';
 
 if (!isset($_GET['bank_id']) || !is_numeric($_GET['bank_id'])) {
     die("Bank ID is missing or invalid.");
@@ -7,6 +8,10 @@ if (!isset($_GET['bank_id']) || !is_numeric($_GET['bank_id'])) {
 
 $bankId = intval($_GET['bank_id']);
 $reportModel = new ReportModel();
+
+// Create Auth Controller instance to check user roles
+$authController = new AuthController();
+$isLO = $authController->isLogisticsOfficer();
 
 // Fetch bank details
 $bank = $reportModel->getBankById($bankId);
@@ -20,6 +25,51 @@ $reports = $reportModel->getReportsByBank($bankId);
 <?php include 'views/includes/header.php'; ?>
 <?php include 'views/includes/sidebar.php'; ?>
 
+<style>
+    .withdraw-btn.disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+    
+    .tooltip {
+        position: relative;
+        display: inline-block;
+    }
+    
+    .tooltip .tooltip-text {
+        visibility: hidden;
+        width: 220px;
+        background-color: #555;
+        color: #fff;
+        text-align: center;
+        border-radius: 6px;
+        padding: 5px;
+        position: absolute;
+        z-index: 1;
+        bottom: 125%;
+        left: 50%;
+        margin-left: -110px;
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+    
+    .tooltip .tooltip-text::after {
+        content: "";
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        margin-left: -5px;
+        border-width: 5px;
+        border-style: solid;
+        border-color: #555 transparent transparent transparent;
+    }
+    
+    .tooltip:hover .tooltip-text {
+        visibility: visible;
+        opacity: 1;
+    }
+</style>
 
 <div class="content">
     <h1>Bank Reports</h1>
@@ -27,7 +77,14 @@ $reports = $reportModel->getReportsByBank($bankId);
 
     <!-- Withdraw Button -->
     <div class="action-buttons">
-        <a href="index.php?path=report/withdrawCard&bank_id=<?= $bank['bank_id']; ?>" class="btn withdraw-btn">Withdraw Card</a>
+        <?php if ($isLO): ?>
+            <a href="index.php?path=report/withdrawCard&bank_id=<?= $bank['bank_id']; ?>" class="btn withdraw-btn">Withdraw Card</a>
+        <?php else: ?>
+            <div class="tooltip">
+                <a class="btn withdraw-btn disabled">Withdraw Card</a>
+                <span class="tooltip-text">Only Logistics Officers can withdraw cards</span>
+            </div>
+        <?php endif; ?>
     </div>
 
     <!-- Existing Reports Table -->
