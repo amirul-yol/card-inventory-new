@@ -22,6 +22,17 @@ if (!$bank) {
 
 // Fetch reports for the bank
 $reports = $reportModel->getReportsByBank($bankId);
+
+// Check if a report exists for today's date
+$todayDate = date('Y-m-d');
+$reportExistsForToday = false;
+
+foreach ($reports as $report) {
+    if ($report['report_date'] === $todayDate) {
+        $reportExistsForToday = true;
+        break;
+    }
+}
 ?>
 <?php include 'views/includes/header.php'; ?>
 <?php include 'views/includes/sidebar.php'; ?>
@@ -78,12 +89,18 @@ $reports = $reportModel->getReportsByBank($bankId);
 
     <!-- Withdraw Button -->
     <div class="action-buttons">
-        <?php if ($isLO): ?>
+        <?php if ($isLO && !$reportExistsForToday): ?>
             <a href="index.php?path=report/withdrawCard&bank_id=<?= $bank['bank_id']; ?>" class="btn withdraw-btn">Withdraw Card</a>
         <?php else: ?>
             <div class="tooltip">
                 <a class="btn withdraw-btn disabled">Withdraw Card</a>
-                <span class="tooltip-text">Only Logistics Officers can withdraw cards</span>
+                <span class="tooltip-text">
+                    <?php if ($reportExistsForToday): ?>
+                        A withdrawal report already exists for today
+                    <?php else: ?>
+                        Only Logistics Officers can withdraw cards
+                    <?php endif; ?>
+                </span>
             </div>
         <?php endif; ?>
     </div>
