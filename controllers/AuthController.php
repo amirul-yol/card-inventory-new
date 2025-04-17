@@ -109,5 +109,10 @@ class AuthController {
     public function isAdmin() {
         return $this->hasRole(1); // Role ID 1 is for Admin
     }
+    
+    // Check if the current user is a Bank user
+    public function isBank() {
+        return $this->hasRole(2); // Role ID 2 is for Bank
+    }
 }
 ?> 
