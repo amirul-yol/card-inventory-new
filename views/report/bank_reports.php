@@ -126,7 +126,9 @@ foreach ($reports as $report) {
 
                         <td>
                             <?php if ($isPO): ?>
-                                <a href="index.php?path=report/verify&report_id=<?= $report['id']; ?>&bank_id=<?= $bank['bank_id']; ?>" class="btn btn-action">Verify</a>
+                                <a href="index.php?path=report/verify&report_id=<?= $report['id']; ?>&bank_id=<?= $bank['bank_id']; ?>" class="btn btn-action">
+                                    <?= $report['status'] === 'Verified' ? 'View' : 'Verify' ?>
+                                </a>
                             <?php else: ?>
                                 <div class="tooltip">
                                     <a class="btn btn-action disabled">Verify</a>
