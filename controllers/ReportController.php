@@ -1,19 +1,49 @@
 <?php
 require_once 'models/ReportModel.php';
 require_once 'models/TransactionModel.php';
+require_once 'controllers/AuthController.php';
 
 
 class ReportController {
+    private $authController;
+    
+    public function __construct() {
+        $this->authController = new AuthController();
+    }
     
     public function index() {
         $model = new ReportModel();
-        $banks = $model->getBanks();
+        
+        // Filter banks for Bank users
+        if ($this->authController->isBank() && isset($_SESSION['bank_id'])) {
+            $bankId = $_SESSION['bank_id'];
+            $allBanks = $model->getBanks();
+            $banks = array_filter($allBanks, function($bank) use ($bankId) {
+                return $bank['bank_id'] == $bankId;
+            });
+        } else {
+            // For Admin, PO, LO users, show all banks
+            $banks = $model->getBanks();
+        }
+        
         include 'views/report/index.php';
     }
 
     public function withdraw() {
         $model = new ReportModel();
-        $banks = $model->getBanks();
+        
+        // Filter banks for Bank users
+        if ($this->authController->isBank() && isset($_SESSION['bank_id'])) {
+            $bankId = $_SESSION['bank_id'];
+            $allBanks = $model->getBanks();
+            $banks = array_filter($allBanks, function($bank) use ($bankId) {
+                return $bank['bank_id'] == $bankId;
+            });
+        } else {
+            // For Admin, PO, LO users, show all banks
+            $banks = $model->getBanks();
+        }
+        
         include 'views/report/withdraw.php';
     }
 
@@ -25,6 +55,11 @@ class ReportController {
     
         if (!$bankId) {
             die("Bank ID is missing or invalid.");
+        }
+        
+        // Check if the user can access this bank
+        if (!$this->authController->canAccessBank($bankId)) {
+            die("You do not have permission to view reports for this bank.");
         }
     
         $reportModel = new ReportModel();
@@ -46,6 +81,11 @@ class ReportController {
         if (!$bankId) {
             die('Bank ID is missing.');
         }
+        
+        // Check if the user can access this bank
+        if (!$this->authController->canAccessBank($bankId)) {
+            die("You do not have permission to withdraw cards for this bank.");
+        }
     
         $reportModel = new ReportModel();
         $bank = $reportModel->getBankById($bankId);
@@ -65,10 +105,17 @@ class ReportController {
         if (!$withdrawalId) {
             die("Withdrawal ID is missing.");
         }
-    
-        $withdrawal = $this->reportModel->getWithdrawalById($withdrawalId);
+        
+        $reportModel = new ReportModel();
+        $withdrawal = $reportModel->getWithdrawalById($withdrawalId);
+        
         if (!$withdrawal) {
             die("Withdrawal not found.");
+        }
+        
+        // Check if the user can access this bank
+        if (!$this->authController->canAccessBank($withdrawal['bank_id'])) {
+            die("You do not have permission to edit withdrawals for this bank.");
         }
     
         include 'views/report/edit_withdrawal_form.php';
@@ -85,6 +132,11 @@ class ReportController {
         // Validate inputs
         if (!$cardId || !$bankId || !$quantity || !$date || !$remarks) {
             die("All fields are required.");
+        }
+        
+        // Check if the user can access this bank
+        if (!$this->authController->canAccessBank($bankId)) {
+            die("You do not have permission to withdraw cards for this bank.");
         }
     
         // Prepare transaction details
@@ -110,9 +162,18 @@ class ReportController {
         if (!$cardId || !$bankId) {
             die("Missing parameters.");
         }
+        
+        // Check if the user can access this bank
+        if (!$this->authController->canAccessBank($bankId)) {
+            die("You do not have permission to withdraw cards for this bank.");
+        }
     
         $reportModel = new ReportModel();
         $card = $reportModel->getCardById($cardId);
+        
+        if (!$card) {
+            die("Card not found.");
+        }
     
         include 'views/report/withdraw_card_form.php'; // Form for withdrawal
     }
@@ -123,6 +184,11 @@ class ReportController {
     
         if (!$cardId || !$bankId) {
             die("Missing card_id or bank_id.");
+        }
+        
+        // Check if the user can access this bank
+        if (!$this->authController->canAccessBank($bankId)) {
+            die("You do not have permission to edit withdrawals for this bank.");
         }
     
         $currentDate = date('Y-m-d');
@@ -184,6 +250,48 @@ class ReportController {
         }
     }
     
+    public function cancelWithdrawal() {
+        // Get withdrawal ID and bank ID from URL parameters
+        $withdrawalId = isset($_GET['withdrawal_id']) ? intval($_GET['withdrawal_id']) : null;
+        $bankId = isset($_GET['bank_id']) ? intval($_GET['bank_id']) : null;
+        
+        if (!$withdrawalId || !$bankId) {
+            die("Missing withdrawal ID or bank ID");
+        }
+        
+        // Initialize the ReportModel
+        $reportModel = new ReportModel();
+        
+        // Get the withdrawal details to get the quantity and card_id
+        $withdrawal = $reportModel->getWithdrawalById($withdrawalId);
+        
+        if (!$withdrawal) {
+            die("Withdrawal not found");
+        }
+        
+        // Get the card ID and quantity from the withdrawal
+        $cardId = $withdrawal['card_id'];
+        $quantity = $withdrawal['quantity'];
+        
+        // First, update the card quantity to add back the withdrawn amount
+        $updateCardSuccess = $reportModel->updateCardQuantity($cardId, $quantity);
+        
+        if (!$updateCardSuccess) {
+            die("Failed to update card quantity");
+        }
+        
+        // Then, delete the withdrawal transaction
+        $deleteSuccess = $reportModel->deleteWithdrawal($withdrawalId);
+        
+        if (!$deleteSuccess) {
+            die("Failed to delete withdrawal transaction");
+        }
+        
+        // Redirect back to the withdraw page with success message
+        header("Location: index.php?path=report/withdrawCard&bank_id=$bankId&status=cancelled");
+        exit;
+    }
+    
     public function submitWithdrawReport() {
         if (isset($_GET['bank_id'])) {
             $bankId = intval($_GET['bank_id']);
@@ -201,21 +309,21 @@ class ReportController {
     
                 if ($updateSuccess) {
                     // Redirect to bank_reports.php with a success message
-                    header("Location: bank_reports.php?bank_id=$bankId&success=withdraw_completed");
+                    header("Location: index.php?path=report/bankReports&bank_id=$bankId&success=withdraw_completed");
                     exit;
                 } else {
                     // Redirect with an error message if transactions update failed
-                    header("Location: bank_reports.php?bank_id=$bankId&error=transaction_update_failed");
+                    header("Location: index.php?path=report/bankReports&bank_id=$bankId&error=transaction_update_failed");
                     exit;
                 }
             } else {
                 // Redirect with an error message if report generation failed
-                header("Location: bank_reports.php?bank_id=$bankId&error=report_creation_failed");
+                header("Location: index.php?path=report/bankReports&bank_id=$bankId&error=report_creation_failed");
                 exit;
             }
         } else {
             // Redirect with an error message if bank_id is missing
-            header("Location: bank_reports.php?error=missing_bank_id");
+            header("Location: index.php?path=report/bankReports&error=missing_bank_id");
             exit;
         }
     }

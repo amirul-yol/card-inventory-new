@@ -30,7 +30,7 @@ class ReportModel {
     }
 
     public function getReportsByBank($bankId) {
-        $query = "SELECT r.id, r.report_date, r.details 
+        $query = "SELECT r.id, r.report_date, r.details, r.status 
                   FROM reports r
                   WHERE r.bank_id = ?";
         $stmt = $this->db->prepare($query);
@@ -156,6 +156,26 @@ class ReportModel {
     public function updateCardQuantity($cardId, $quantityChange) {
         $stmt = $this->db->prepare("UPDATE cards SET quantity = quantity + ? WHERE id = ?");
         return $stmt->execute([$quantityChange, $cardId]);
+    }
+    
+    public function deleteWithdrawal($withdrawalId) {
+        $sql = "DELETE FROM transactions WHERE id = ? AND transaction_type = 'withdraw'";
+        $stmt = $this->db->prepare($sql);
+        
+        if (!$stmt) {
+            error_log("Error preparing delete statement: " . $this->db->error);
+            return false;
+        }
+        
+        $stmt->bind_param("i", $withdrawalId);
+        $result = $stmt->execute();
+        
+        if (!$result) {
+            error_log("Error executing delete statement: " . $stmt->error);
+            return false;
+        }
+        
+        return true;
     }
     
     public function createWithdrawalReport($bankId) {

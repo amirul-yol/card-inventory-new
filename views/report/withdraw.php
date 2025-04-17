@@ -20,11 +20,11 @@ if (!$bank) {
 // Get all cards and their withdrawal status for today
 $cards = $cardModel->getCardsWithWithdrawalStatus($bankId);
 
-// Check if all cards are withdrawn
-$allWithdrawn = true;
+// Check if ANY card is withdrawn (instead of ALL cards)
+$anyWithdrawn = false;
 foreach ($cards as $card) {
-    if (empty($card['withdrawn_today'])) { // withdrawn_today is a boolean field
-        $allWithdrawn = false;
+    if (!empty($card['withdrawn_today'])) { // withdrawn_today is a boolean field
+        $anyWithdrawn = true;
         break;
     }
 }
@@ -42,22 +42,29 @@ include 'views/includes/sidebar.php';
     <h1>Withdraw Cards</h1>
     <h2>Bank: <?= htmlspecialchars($bank['name'], ENT_QUOTES, 'UTF-8'); ?></h2>
 
-    <!-- Finish Withdraw Button -->
+    <!-- Finish Withdraw Button - Enable if ANY card is withdrawn -->
     <button class="finish-withdraw-btn" 
-            <?= ($allWithdrawn && (!$latestReport || $latestReport['status'] === 'rejected')) ? 'onclick="finishWithdraw()"' : 'disabled'; ?>>
+            <?= ($anyWithdrawn && (!$latestReport || $latestReport['status'] === 'rejected')) ? 'onclick="finishWithdraw()"' : 'disabled'; ?>>
         Finish Withdraw
     </button>
+    
+    <!-- Tooltip for disabled button -->
+    <?php if (!$anyWithdrawn): ?>
+    <div class="tooltip-container">
+        <span class="tooltip-text">Withdraw at least one card to enable this button</span>
+    </div>
+    <?php endif; ?>
 
     <script>
         function finishWithdraw() {
-            const url = "/card-inventory/card-inventory-backend/index.php?path=report/submitWithdrawReport&bank_id=<?php echo $bankId; ?>";
+            const url = "index.php?path=report/submitWithdrawReport&bank_id=<?php echo $bankId; ?>";
             console.log("Navigating to:", url); // Debugging
             if (confirm("Are you sure you want to finish the withdrawal process?")) {
                 fetch(url)
                     .then(response => {
                         if (response.ok) {
-                            // Redirect to bank_reports.php after successful processing
-                            window.location.href = "/card-inventory/card-inventory-backend/views/bank_reports.php";
+                            // Redirect to bank reports page after successful processing
+                            window.location.href = "index.php?path=report/bankReports&bank_id=<?php echo $bankId; ?>";
                         } else {
                             alert("Failed to process the request. Please try again.");
                         }
@@ -137,11 +144,11 @@ include 'views/includes/sidebar.php';
         margin-bottom: 20px;
         padding: 10px 20px;
         font-size: 16px;
-        background-color: <?= $allWithdrawn ? '#28a745' : '#cccccc'; ?>;
+        background-color: <?= $anyWithdrawn ? '#28a745' : '#cccccc'; ?>;
         color: #fff;
         border: none;
         border-radius: 5px;
-        cursor: <?= $allWithdrawn ? 'pointer' : 'not-allowed'; ?>;
+        cursor: <?= $anyWithdrawn ? 'pointer' : 'not-allowed'; ?>;
     }
     .finish-withdraw-btn:disabled {
         background-color: #cccccc;
@@ -161,6 +168,16 @@ include 'views/includes/sidebar.php';
     }
     .btn:hover {
         opacity: 0.8;
+    }
+    .tooltip-container {
+        position: relative;
+        display: inline-block;
+        margin-left: 10px;
+    }
+    .tooltip-text {
+        color: #777;
+        font-size: 14px;
+        font-style: italic;
     }
 </style>
 

@@ -1,4 +1,4 @@
-card_inventory.sql
+*.sql
 .env
 Overview.md
 tests/
