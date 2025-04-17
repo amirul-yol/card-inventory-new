@@ -45,6 +45,13 @@ class AuthController {
             $_SESSION['user_email'] = $user['email'];
             $_SESSION['user_role'] = $user['role_id'];
             
+            // Store bank_id in session if it exists (for Bank users)
+            if ($user['role_id'] == 2 && isset($user['bank_id'])) {
+                $_SESSION['bank_id'] = $user['bank_id'];
+            } else {
+                $_SESSION['bank_id'] = null; // Ensure admin/others have NULL bank_id
+            }
+            
             // Log login attempt
             error_log("User {$user['id']} ({$user['email']}) logged in successfully");
             
@@ -113,6 +120,17 @@ class AuthController {
     // Check if the current user is a Bank user
     public function isBank() {
         return $this->hasRole(2); // Role ID 2 is for Bank
+    }
+    
+    // Check if the user can access data for a specific bank
+    public function canAccessBank($bankId) {
+        // Admin, PO, and LO can access all banks
+        if (!$this->isBank()) {
+            return true;
+        }
+        
+        // Bank users can only access their own bank's data
+        return isset($_SESSION['bank_id']) && $_SESSION['bank_id'] == $bankId;
     }
 }
 ?> 

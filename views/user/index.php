@@ -15,6 +15,7 @@
                     <th>Email</th>
                     <th>Phone</th>
                     <th>Role</th>
+                    <th>Bank</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -26,6 +27,7 @@
                         <td><?= $user['user_email'] ?></td>
                         <td><?= $user['user_phone'] ?></td>
                         <td><?= $user['role_name'] ?></td>
+                        <td><?= $user['role_name'] === 'Bank' ? ($user['bank_name'] ?? 'Not Assigned') : '-' ?></td>
                         <td>
                             <!-- Edit Button -->
                             <a href="index.php?path=user/editUser&id=<?= $user['user_id'] ?>" class="btn">Edit</a>
