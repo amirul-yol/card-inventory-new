@@ -131,6 +131,11 @@ switch ($path) {
         $controller->editWithdrawalForm();
         break;
         
+    case 'report/cancelWithdrawal':
+        $controller = new ReportController();
+        $controller->cancelWithdrawal();
+        break;
+        
     case 'report/verify':
         $controller = new ReportController();
         $controller->verify();  // Call the verify method for verifying the report

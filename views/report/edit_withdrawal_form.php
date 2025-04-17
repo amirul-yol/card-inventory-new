@@ -46,8 +46,19 @@ include 'views/includes/sidebar.php';
     <label for="date">Withdrawal Date:</label>
     <input type="date" name="date" id="date" value="<?= htmlspecialchars($withdrawal['transaction_date'] ?? ''); ?>" required>
 
-    <button type="submit">Update</button>
+    <div class="button-group">
+        <button type="submit" class="btn update-btn">Update</button>
+        <button type="button" class="btn cancel-btn" onclick="cancelWithdrawal()">Cancel Withdrawal</button>
+    </div>
 </form>
+
+<script>
+    function cancelWithdrawal() {
+        if (confirm("Are you sure you want to cancel this withdrawal? This will remove the withdrawal entry completely.")) {
+            window.location.href = "index.php?path=report/cancelWithdrawal&withdrawal_id=<?= htmlspecialchars($withdrawal['id'] ?? ''); ?>&bank_id=<?= htmlspecialchars($withdrawal['bank_id'] ?? ''); ?>";
+        }
+    }
+</script>
 
 </div>
 
@@ -69,17 +80,27 @@ include 'views/includes/sidebar.php';
         border: 1px solid #ddd;
         border-radius: 4px;
     }
+    .button-group {
+        margin-top: 15px;
+        display: flex;
+        gap: 10px;
+    }
     .btn {
         padding: 10px 15px;
         border: none;
         border-radius: 5px;
-        background-color: #007bff;
         color: white;
         font-size: 16px;
         cursor: pointer;
     }
+    .update-btn {
+        background-color: #007bff;
+    }
+    .cancel-btn {
+        background-color: #dc3545;
+    }
     .btn:hover {
-        background-color: #0056b3;
+        opacity: 0.8;
     }
 </style>
 

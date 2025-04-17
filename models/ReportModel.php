@@ -158,6 +158,26 @@ class ReportModel {
         return $stmt->execute([$quantityChange, $cardId]);
     }
     
+    public function deleteWithdrawal($withdrawalId) {
+        $sql = "DELETE FROM transactions WHERE id = ? AND transaction_type = 'withdraw'";
+        $stmt = $this->db->prepare($sql);
+        
+        if (!$stmt) {
+            error_log("Error preparing delete statement: " . $this->db->error);
+            return false;
+        }
+        
+        $stmt->bind_param("i", $withdrawalId);
+        $result = $stmt->execute();
+        
+        if (!$result) {
+            error_log("Error executing delete statement: " . $stmt->error);
+            return false;
+        }
+        
+        return true;
+    }
+    
     public function createWithdrawalReport($bankId) {
         $currentDate = date('Y-m-d');
     

@@ -184,6 +184,48 @@ class ReportController {
         }
     }
     
+    public function cancelWithdrawal() {
+        // Get withdrawal ID and bank ID from URL parameters
+        $withdrawalId = isset($_GET['withdrawal_id']) ? intval($_GET['withdrawal_id']) : null;
+        $bankId = isset($_GET['bank_id']) ? intval($_GET['bank_id']) : null;
+        
+        if (!$withdrawalId || !$bankId) {
+            die("Missing withdrawal ID or bank ID");
+        }
+        
+        // Initialize the ReportModel
+        $reportModel = new ReportModel();
+        
+        // Get the withdrawal details to get the quantity and card_id
+        $withdrawal = $reportModel->getWithdrawalById($withdrawalId);
+        
+        if (!$withdrawal) {
+            die("Withdrawal not found");
+        }
+        
+        // Get the card ID and quantity from the withdrawal
+        $cardId = $withdrawal['card_id'];
+        $quantity = $withdrawal['quantity'];
+        
+        // First, update the card quantity to add back the withdrawn amount
+        $updateCardSuccess = $reportModel->updateCardQuantity($cardId, $quantity);
+        
+        if (!$updateCardSuccess) {
+            die("Failed to update card quantity");
+        }
+        
+        // Then, delete the withdrawal transaction
+        $deleteSuccess = $reportModel->deleteWithdrawal($withdrawalId);
+        
+        if (!$deleteSuccess) {
+            die("Failed to delete withdrawal transaction");
+        }
+        
+        // Redirect back to the withdraw page with success message
+        header("Location: index.php?path=report/withdrawCard&bank_id=$bankId&status=cancelled");
+        exit;
+    }
+    
     public function submitWithdrawReport() {
         if (isset($_GET['bank_id'])) {
             $bankId = intval($_GET['bank_id']);
