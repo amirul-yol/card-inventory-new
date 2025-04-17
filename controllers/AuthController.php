@@ -104,5 +104,10 @@ class AuthController {
     public function isProductionOfficer() {
         return $this->hasRole(3); // Role ID 3 is for PO
     }
+    
+    // Check if the current user is an Admin
+    public function isAdmin() {
+        return $this->hasRole(1); // Role ID 1 is for Admin
+    }
 }
 ?> 
