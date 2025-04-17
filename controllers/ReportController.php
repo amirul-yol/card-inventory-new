@@ -201,21 +201,21 @@ class ReportController {
     
                 if ($updateSuccess) {
                     // Redirect to bank_reports.php with a success message
-                    header("Location: bank_reports.php?bank_id=$bankId&success=withdraw_completed");
+                    header("Location: index.php?path=report/bankReports&bank_id=$bankId&success=withdraw_completed");
                     exit;
                 } else {
                     // Redirect with an error message if transactions update failed
-                    header("Location: bank_reports.php?bank_id=$bankId&error=transaction_update_failed");
+                    header("Location: index.php?path=report/bankReports&bank_id=$bankId&error=transaction_update_failed");
                     exit;
                 }
             } else {
                 // Redirect with an error message if report generation failed
-                header("Location: bank_reports.php?bank_id=$bankId&error=report_creation_failed");
+                header("Location: index.php?path=report/bankReports&bank_id=$bankId&error=report_creation_failed");
                 exit;
             }
         } else {
             // Redirect with an error message if bank_id is missing
-            header("Location: bank_reports.php?error=missing_bank_id");
+            header("Location: index.php?path=report/bankReports&error=missing_bank_id");
             exit;
         }
     }

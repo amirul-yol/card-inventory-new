@@ -50,14 +50,14 @@ include 'views/includes/sidebar.php';
 
     <script>
         function finishWithdraw() {
-            const url = "/card-inventory/card-inventory-backend/index.php?path=report/submitWithdrawReport&bank_id=<?php echo $bankId; ?>";
+            const url = "index.php?path=report/submitWithdrawReport&bank_id=<?php echo $bankId; ?>";
             console.log("Navigating to:", url); // Debugging
             if (confirm("Are you sure you want to finish the withdrawal process?")) {
                 fetch(url)
                     .then(response => {
                         if (response.ok) {
-                            // Redirect to bank_reports.php after successful processing
-                            window.location.href = "/card-inventory/card-inventory-backend/views/bank_reports.php";
+                            // Redirect to bank reports page after successful processing
+                            window.location.href = "index.php?path=report/bankReports&bank_id=<?php echo $bankId; ?>";
                         } else {
                             alert("Failed to process the request. Please try again.");
                         }
