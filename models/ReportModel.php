@@ -30,7 +30,7 @@ class ReportModel {
     }
 
     public function getReportsByBank($bankId) {
-        $query = "SELECT r.id, r.report_date, r.details 
+        $query = "SELECT r.id, r.report_date, r.details, r.status 
                   FROM reports r
                   WHERE r.bank_id = ?";
         $stmt = $this->db->prepare($query);
