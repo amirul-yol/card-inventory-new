@@ -1,5 +1,6 @@
 <?php
 require_once 'models/ReportModel.php';
+require_once 'controllers/AuthController.php';
 
 $bankId = isset($_GET['bank_id']) ? intval($_GET['bank_id']) : null;
 $reportId = isset($_GET['report_id']) ? intval($_GET['report_id']) : null;
@@ -15,6 +16,14 @@ $transactions = $reportModel->getTransactionsForReport($reportId);
 $report = $reportModel->getReportById($reportId);
 $isVerified = ($report && $report['status'] === 'Verified');
 
+// Check user role
+$authController = new AuthController();
+$isPO = $authController->isProductionOfficer();
+$isLO = $authController->isLogisticsOfficer();
+
+// Determine if the user can verify (only POs can verify and only if not already verified)
+$canVerify = $isPO && !$isVerified;
+
 include 'views/includes/header.php';
 include 'views/includes/sidebar.php';
 ?>
@@ -28,6 +37,10 @@ include 'views/includes/sidebar.php';
         <?php if ($isVerified): ?>
             <div class="alert alert-info">
                 This report has already been verified and cannot be modified.
+            </div>
+        <?php elseif ($isLO): ?>
+            <div class="alert alert-info">
+                You can view this report, but only Production Officers can verify reports.
             </div>
         <?php endif; ?>
 
@@ -55,7 +68,7 @@ include 'views/includes/sidebar.php';
                                 ?>
                             </td>
                             <td>
-                                <?php if (!$isVerified): ?>
+                                <?php if ($canVerify): ?>
                                     <a href="index.php?path=report/rejectCard&transaction_id=<?= $transaction['id']; ?>&bank_id=<?= $bankId ?>&report_id=<?= $reportId ?>" class="btn btn-danger">
                                         Reject
                                     </a>
@@ -73,8 +86,14 @@ include 'views/includes/sidebar.php';
             </tbody>
         </table>
 
-        <button type="submit" name="verify_report" class="btn btn-primary" <?= $isVerified ? 'disabled' : '' ?>>
-            <?= $isVerified ? 'Already Verified' : 'Verify' ?>
+        <button type="submit" name="verify_report" class="btn btn-primary" <?= $canVerify ? '' : 'disabled' ?>>
+            <?php if ($isVerified): ?>
+                Already Verified
+            <?php elseif (!$isPO): ?>
+                Only POs Can Verify
+            <?php else: ?>
+                Verify
+            <?php endif; ?>
         </button>
     </form>
 </div>

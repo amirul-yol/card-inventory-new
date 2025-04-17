@@ -130,10 +130,9 @@ foreach ($reports as $report) {
                                     <?= $report['status'] === 'Verified' ? 'View' : 'Verify' ?>
                                 </a>
                             <?php else: ?>
-                                <div class="tooltip">
-                                    <a class="btn btn-action disabled">Verify</a>
-                                    <span class="tooltip-text">Only Production Officers can verify reports</span>
-                                </div>
+                                <a href="index.php?path=report/verify&report_id=<?= $report['id']; ?>&bank_id=<?= $bank['bank_id']; ?>" class="btn btn-action">
+                                    View
+                                </a>
                             <?php endif; ?>
                             <a href="index.php?path=report/download&report_id=<?= $report['id']; ?>" class="btn btn-action">Generate Report</a>
                         </td>
