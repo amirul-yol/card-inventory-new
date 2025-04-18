@@ -17,16 +17,21 @@ class DashboardController {
         try {
             $isBank = $this->authController->isBank();
             
-            // Base data that all users need
-            $data = [
-                'totalReports' => $this->model->getTotalReports(),
-                'totalCards' => $this->model->getTotalCards(),
-            ];
-            
-            // Only fetch banks and users count if not a Bank user
-            if (!$isBank) {
-                $data['totalBanks'] = $this->model->getTotalBanks();
-                $data['totalUsers'] = $this->model->getTotalUsers();
+            // Different data retrieval strategy based on user role
+            if ($isBank && isset($_SESSION['bank_id'])) {
+                $bankId = $_SESSION['bank_id'];
+                $data = [
+                    'totalReports' => $this->model->getTotalReportsByBank($bankId),
+                    'totalCards' => $this->model->getTotalCardsByBank($bankId),
+                ];
+            } else {
+                // For Admin, PO, LO users - show system-wide totals
+                $data = [
+                    'totalReports' => $this->model->getTotalReports(),
+                    'totalCards' => $this->model->getTotalCards(),
+                    'totalBanks' => $this->model->getTotalBanks(),
+                    'totalUsers' => $this->model->getTotalUsers(),
+                ];
             }
 
             include 'views/dashboard/index.php';
