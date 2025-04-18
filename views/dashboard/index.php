@@ -1,4 +1,11 @@
-<?php include __DIR__ . '/../includes/header.php'; ?>
+<?php 
+// Include AuthController to check user role
+require_once 'controllers/AuthController.php';
+$authController = new AuthController();
+$isBank = $authController->isBank();
+
+include __DIR__ . '/../includes/header.php'; 
+?>
 <div class="content">
     <?php include __DIR__ . '/../includes/sidebar.php'; ?>
     <main>
@@ -13,6 +20,7 @@
             <h2>Total Cards</h2>
             <p><?php echo $data['totalCards']; ?></p>
         </div>
+        <?php if (!$isBank): ?>
         <div class="dashboard-box">
             <h2>Total Banks</h2>
             <p><?php echo $data['totalBanks']; ?></p>
@@ -21,6 +29,7 @@
             <h2>Total Users</h2>
             <p><?php echo $data['totalUsers']; ?></p>
         </div>
+        <?php endif; ?>
     </main>
 </div>
 
