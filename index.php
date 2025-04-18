@@ -237,6 +237,18 @@ switch ($path) {
         $controller = new UserProfileController();
         $controller->index();
         break;
+        
+    case 'user_profile/edit':
+        require_once 'controllers/UserProfileController.php';
+        $controller = new UserProfileController();
+        $controller->edit();
+        break;
+        
+    case 'user_profile/update':
+        require_once 'controllers/UserProfileController.php';
+        $controller = new UserProfileController();
+        $controller->update();
+        break;
 
     default:
         echo '404 - Page Not Found';
