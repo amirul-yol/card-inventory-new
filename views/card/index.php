@@ -3,6 +3,8 @@ require_once 'controllers/AuthController.php';
 // Create Auth Controller instance to check user roles
 $authController = new AuthController();
 $isLO = $authController->isLogisticsOfficer();
+$isBank = $authController->isBank();
+$bankId = $isBank && isset($_SESSION['bank_id']) ? $_SESSION['bank_id'] : null;
 include 'views/includes/header.php'; 
 ?>
 <?php include 'views/includes/sidebar.php'; ?>
@@ -65,9 +67,9 @@ include 'views/includes/header.php';
         <?php endif; ?>
     </h1>
     <div class="bank-list">
-        <?php foreach ($banks as $bankId => $bank): ?>
+        <?php foreach ($banks as $currentBankId => $bank): ?>
             <!-- Bank Card -->
-            <div class="bank-card" data-bank-id="<?= $bankId ?>">
+            <div class="bank-card" data-bank-id="<?= $currentBankId ?>">
                 <div class="bank-header">
                     <div class="bank-info">
                         <img src="<?= $bank['bank_logo'] ?>" alt="<?= $bank['bank_name'] ?>" class="bank-logo">
@@ -77,7 +79,7 @@ include 'views/includes/header.php';
                 </div>
             </div>
             <!-- Card Table -->
-            <div class="bank-details" id="bank-<?= $bankId ?>">
+            <div class="bank-details" id="bank-<?= $currentBankId ?>">
                 <?php if (!empty($bank['cards'])): ?>
                     <table>
                         <thead>
@@ -109,8 +111,6 @@ include 'views/includes/header.php';
                                             <i class="fa fa-file-text"></i> <!-- FontAwesome icon for a report -->
                                         </a>
                                     </td>
-
-
                                 </tr>
                             <?php endforeach; ?>
                         </tbody>
@@ -122,5 +122,27 @@ include 'views/includes/header.php';
         <?php endforeach; ?>
     </div>
 </div>
+
+<!-- Add auto-expand script for bank users -->
+<?php if ($isBank && $bankId): ?>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Auto-expand the bank's card section for bank users
+        const bankDetails = document.getElementById('bank-<?= $bankId ?>');
+        const bankCard = document.querySelector(`.bank-card[data-bank-id="<?= $bankId ?>"]`);
+        
+        if (bankDetails && bankCard) {
+            // Display the details
+            bankDetails.style.display = 'block';
+            
+            // Update the icon if needed
+            const icon = bankCard.querySelector('.expand-icon');
+            if (icon) {
+                icon.classList.add('open');
+            }
+        }
+    });
+</script>
+<?php endif; ?>
 
 <?php include 'views/includes/footer.php'; ?>
