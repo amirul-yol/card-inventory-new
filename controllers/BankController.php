@@ -9,6 +9,12 @@ class BankController {
         $this->authController = new AuthController();
     }
     
+    // Get all banks with minimal information
+    public function getAllBanks() {
+        $model = new BankModel();
+        return $model->getBanksWithCardCount();
+    }
+    
     public function index() {
         // Redirect Bank users to their specific bank details page
         if ($this->authController->isBank() && isset($_SESSION['bank_id'])) {

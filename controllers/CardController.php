@@ -9,6 +9,26 @@ class CardController {
         $this->authController = new AuthController();
     }
     
+    public function getBanksWithCards() {
+        $model = new CardModel();
+        $allBanks = $model->getBanksWithCards();
+        
+        // If user is a Bank user, filter to show only their bank
+        if ($this->authController->isBank() && isset($_SESSION['bank_id'])) {
+            $bankId = $_SESSION['bank_id'];
+            $banks = [];
+            
+            // Only include the bank that the user is associated with
+            if (isset($allBanks[$bankId])) {
+                $banks[$bankId] = $allBanks[$bankId];
+            }
+            return $banks;
+        } else {
+            // For Admin, PO, LO users, show all banks
+            return $allBanks;
+        }
+    }
+    
     public function index() {
         $model = new CardModel();
         $allBanks = $model->getBanksWithCards();
@@ -219,6 +239,39 @@ class CardController {
     
         header("Location: index.php?path=card/viewTransactions&card_id=" . $cardId);
         exit;
+    }
+    
+    // Add a method to get transactions as JSON for AJAX
+    public function getTransactionsJson() {
+        $cardId = $_GET['card_id'] ?? null;
+    
+        if (!$cardId || !is_numeric($cardId)) {
+            echo json_encode(['error' => 'Invalid Card ID']);
+            return;
+        }
+    
+        $cardModel = new CardModel();
+        $card = $cardModel->getCardById($cardId);
+    
+        if (!$card) {
+            echo json_encode(['error' => 'Card not found']);
+            return;
+        }
+        
+        // Check if the user can access this bank
+        if (!$this->authController->canAccessBank($card['bank_id'])) {
+            echo json_encode(['error' => 'Permission denied']);
+            return;
+        }
+        
+        $transactions = $cardModel->getTransactionsByCardId($cardId);
+        
+        // Return card and transactions data
+        echo json_encode([
+            'success' => true,
+            'card' => $card,
+            'transactions' => $transactions
+        ]);
     }
     
 }    

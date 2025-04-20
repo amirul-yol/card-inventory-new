@@ -91,6 +91,11 @@ switch ($path) {
         $controller->processEditTransaction();
         break;
     
+    case 'card/getTransactionsJson':
+        $controller = new CardController();
+        $controller->getTransactionsJson();
+        break;
+
     case 'report':
         $controller = new ReportController();
         $controller->index();
