@@ -95,6 +95,11 @@ switch ($path) {
         $controller = new CardController();
         $controller->getTransactionsJson();
         break;
+        
+    case 'card/getBankWithCardsJson':
+        $controller = new CardController();
+        $controller->getBankWithCardsJson();
+        break;
 
     case 'report':
         $controller = new ReportController();
@@ -199,6 +204,11 @@ switch ($path) {
     case 'bank/details':
         $controller = new BankController();
         $controller->details();
+        break;
+
+    case 'bank/getBanksJson':
+        $controller = new BankController();
+        $controller->getBanksJson();
         break;
 
     case 'user':

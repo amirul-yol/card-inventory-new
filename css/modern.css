@@ -1229,3 +1229,129 @@ input[type="file"].form-control {
   color: var(--text-light);
   font-size: 0.8rem;
 }
+
+/* Form grid layout for popups */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  width: 100%;
+}
+
+.form-column {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+/* Adjust popup content for form grid */
+.popup-content {
+  max-height: 90vh;
+  overflow-y: auto;
+  width: 100%;
+  max-width: 600px; /* Wider to accommodate the grid */
+}
+
+/* Make sure the popup body has proper spacing */
+.popup-body {
+  padding: 1.5rem;
+}
+
+/* Adjust form actions to span full width */
+.form-actions {
+  margin-top: 1.5rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.8rem;
+  grid-column: 1 / -1;
+}
+
+/* Responsive adjustment for small screens */
+@media (max-width: 576px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .popup-content {
+    max-width: 90%;
+  }
+}
+
+/* Notification system */
+.notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  min-width: 300px;
+  background-color: white;
+  border-radius: 6px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+  z-index: 9999; /* Increased z-index to ensure it's above everything */
+  overflow: hidden;
+  transform: translateX(110%);
+  transition: transform 0.3s ease-out;
+}
+
+.notification.show {
+  transform: translateX(0);
+}
+
+.notification-content {
+  display: flex;
+  align-items: center;
+  padding: 15px 20px;
+}
+
+.notification-icon {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: var(--accent-color);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 15px;
+}
+
+.notification-icon i {
+  font-size: 0.9rem;
+}
+
+.notification-message {
+  flex-grow: 1;
+  font-size: 0.9rem;
+  color: var(--text-color);
+}
+
+.notification-close {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-light);
+  margin-left: 10px;
+  transition: color 0.2s ease;
+}
+
+.notification-close:hover {
+  color: var(--text-color);
+}
+
+.notification-progress {
+  height: 3px;
+  background-color: var(--accent-color);
+  width: 100%;
+}
+
+.notification.success .notification-icon {
+  background-color: var(--accent-color);
+}
+
+.notification.error .notification-icon {
+  background-color: var(--danger-color);
+}

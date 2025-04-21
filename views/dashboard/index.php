@@ -192,47 +192,53 @@ include __DIR__ . '/../includes/header.php';
         </div>
         <div class="popup-body">
             <form id="addCardForm" method="post" action="index.php?path=card/store">
-                <div class="form-group">
-                    <label for="name">Card Name:</label>
-                    <input type="text" id="name" name="name" required class="form-control">
-                </div>
+                <div class="form-grid">
+                    <div class="form-column">
+                        <div class="form-group">
+                            <label for="name">Card Name:</label>
+                            <input type="text" id="name" name="name" required class="form-control">
+                        </div>
 
-                <div class="form-group">
-                    <label for="bank_id">Bank:</label>
-                    <select id="bank_id" name="bank_id" required class="form-control">
-                        <option value="">-- Select Bank --</option>
-                        <?php 
-                        // Get all banks from the array we already have loaded
-                        foreach ($allBanks as $bank): 
-                        ?>
-                            <option value="<?= $bank['bank_id'] ?>"><?= $bank['bank_name'] ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
+                        <div class="form-group">
+                            <label for="bank_id">Bank:</label>
+                            <select id="bank_id" name="bank_id" required class="form-control">
+                                <option value="">-- Select Bank --</option>
+                                <?php 
+                                // Get all banks from the array we already have loaded
+                                foreach ($allBanks as $bank): 
+                                ?>
+                                    <option value="<?= $bank['bank_id'] ?>"><?= $bank['bank_name'] ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
 
-                <div class="form-group">
-                    <label for="association">Association:</label>
-                    <input type="text" id="association" name="association" required class="form-control">
-                </div>
+                        <div class="form-group">
+                            <label for="association">Association:</label>
+                            <input type="text" id="association" name="association" required class="form-control">
+                        </div>
 
-                <div class="form-group">
-                    <label for="chip_type">Chip Type:</label>
-                    <input type="text" id="chip_type" name="chip_type" required class="form-control">
-                </div>
+                        <div class="form-group">
+                            <label for="chip_type">Chip Type:</label>
+                            <input type="text" id="chip_type" name="chip_type" required class="form-control">
+                        </div>
+                    </div>
+                    
+                    <div class="form-column">
+                        <div class="form-group">
+                            <label for="type">Type:</label>
+                            <input type="text" id="type" name="type" required class="form-control">
+                        </div>
 
-                <div class="form-group">
-                    <label for="type">Type:</label>
-                    <input type="text" id="type" name="type" required class="form-control">
-                </div>
+                        <div class="form-group">
+                            <label for="expired_at">Expiration Date:</label>
+                            <input type="date" id="expired_at" name="expired_at" required class="form-control">
+                        </div>
 
-                <div class="form-group">
-                    <label for="expired_at">Expiration Date:</label>
-                    <input type="date" id="expired_at" name="expired_at" required class="form-control">
-                </div>
-
-                <div class="form-group">
-                    <label for="card_quantity">Quantity:</label>
-                    <input type="number" id="card_quantity" name="quantity" min="1" required class="form-control">
+                        <div class="form-group">
+                            <label for="card_quantity">Quantity:</label>
+                            <input type="number" id="card_quantity" name="quantity" min="1" required class="form-control">
+                        </div>
+                    </div>
                 </div>
 
                 <div class="form-actions">
@@ -349,5 +355,47 @@ include __DIR__ . '/../includes/header.php';
 <script>
     const banksWithCards = <?= json_encode($banksWithCards) ?>;
 </script>
+
+<!-- Notification element -->
+<div id="notification" class="notification">
+    <div class="notification-content">
+        <div class="notification-icon">
+            <i class="fas fa-check"></i>
+        </div>
+        <div class="notification-message" id="notification-message">
+            Card added successfully
+        </div>
+        <div class="notification-close" id="notification-close">
+            <i class="fas fa-times"></i>
+        </div>
+    </div>
+    <div class="notification-progress" id="notification-progress"></div>
+</div>
+
+<!-- Edit Transaction popup -->
+<div id="editTransactionPopup" class="popup">
+    <div class="popup-content">
+        <div class="popup-header">
+            <h3>Edit Transaction</h3>
+            <span class="close-popup">&times;</span>
+        </div>
+        <div class="popup-body">
+            <form id="editTransactionForm" method="post" action="index.php?path=card/processEditTransaction">
+                <input type="hidden" id="edit_transaction_id" name="transaction_id">
+                <input type="hidden" id="edit_card_id" name="card_id">
+                
+                <div class="form-group">
+                    <label for="edit_quantity">Quantity:</label>
+                    <input type="number" id="edit_quantity" name="quantity" min="1" required class="form-control">
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" id="cancelEditTransactionBtn">Cancel</button>
+                    <button type="submit" class="btn-primary">Update</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 <?php include __DIR__ . '/../includes/footer.php'; ?>

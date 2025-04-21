@@ -81,12 +81,34 @@ class CardController {
             
             // Check if the user can access this bank
             if (!$this->authController->canAccessBank($bankId)) {
-                die("You do not have permission to add cards to this bank.");
+                if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest') {
+                    echo json_encode(['success' => false, 'error' => 'You do not have permission to add cards to this bank.']);
+                    exit;
+                } else {
+                    die("You do not have permission to add cards to this bank.");
+                }
             }
     
-            $model->addCard($name, $bankId, $association, $chipType, $type, $expiredAt, $quantity);
+            $cardId = $model->addCard($name, $bankId, $association, $chipType, $type, $expiredAt, $quantity);
+            
+            // Get bank name for the response
+            $bank = $model->getBankById($bankId);
+            $bankName = $bank ? $bank['name'] : '';
+            
+            // Check if this is an AJAX request
+            if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest') {
+                echo json_encode([
+                    'success' => true, 
+                    'card_id' => $cardId,
+                    'bank_id' => $bankId,
+                    'bank_name' => $bankName,
+                    'message' => 'Card added successfully'
+                ]);
+                exit;
+            }
         }
     
+        // Regular form submission (fallback)
         header('Location: index.php?path=card');
         exit;
     }
@@ -164,23 +186,50 @@ class CardController {
         $quantity = $_POST['quantity'] ?? null;
     
         if (!$cardId || !$quantity || !is_numeric($quantity) || $quantity <= 0) {
-            die("Invalid input.");
+            if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest') {
+                echo json_encode(['success' => false, 'error' => 'Invalid input.']);
+                exit;
+            } else {
+                die("Invalid input.");
+            }
         }
         
         $cardModel = new CardModel();
         $card = $cardModel->getCardById($cardId);
         
         if (!$card) {
-            die("Card not found.");
+            if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest') {
+                echo json_encode(['success' => false, 'error' => 'Card not found.']);
+                exit;
+            } else {
+                die("Card not found.");
+            }
         }
         
         // Check if the user can access this bank
         if (!$this->authController->canAccessBank($card['bank_id'])) {
-            die("You do not have permission to deposit cards for this bank.");
+            if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest') {
+                echo json_encode(['success' => false, 'error' => 'You do not have permission to deposit cards for this bank.']);
+                exit;
+            } else {
+                die("You do not have permission to deposit cards for this bank.");
+            }
         }
     
         $cardModel->addDeposit($cardId, $quantity);
+        
+        // Check if this is an AJAX request
+        if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest') {
+            echo json_encode([
+                'success' => true, 
+                'message' => 'Card deposited successfully',
+                'card_id' => $cardId,
+                'quantity' => $quantity
+            ]);
+            exit;
+        }
     
+        // Regular form submission (fallback)
         header("Location: index.php?path=card/viewTransactions&card_id=" . $cardId);
         exit;
     }
@@ -220,23 +269,51 @@ class CardController {
         $quantity = $_POST['quantity'] ?? null;
     
         if (!$transactionId || !$cardId || !$quantity || !is_numeric($quantity) || $quantity <= 0) {
-            die("Invalid input.");
+            if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest') {
+                echo json_encode(['success' => false, 'error' => 'Invalid input.']);
+                exit;
+            } else {
+                die("Invalid input.");
+            }
         }
         
         $cardModel = new CardModel();
         $card = $cardModel->getCardById($cardId);
         
         if (!$card) {
-            die("Card not found.");
+            if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest') {
+                echo json_encode(['success' => false, 'error' => 'Card not found.']);
+                exit;
+            } else {
+                die("Card not found.");
+            }
         }
         
         // Check if the user can access this bank
         if (!$this->authController->canAccessBank($card['bank_id'])) {
-            die("You do not have permission to edit transactions for this bank.");
+            if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest') {
+                echo json_encode(['success' => false, 'error' => 'You do not have permission to edit transactions for this bank.']);
+                exit;
+            } else {
+                die("You do not have permission to edit transactions for this bank.");
+            }
         }
     
         $cardModel->updateTransaction($transactionId, $cardId, $quantity);
+        
+        // Check if this is an AJAX request
+        if (isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest') {
+            echo json_encode([
+                'success' => true, 
+                'message' => 'Transaction updated successfully',
+                'transaction_id' => $transactionId,
+                'card_id' => $cardId,
+                'quantity' => $quantity
+            ]);
+            exit;
+        }
     
+        // Regular form submission (fallback)
         header("Location: index.php?path=card/viewTransactions&card_id=" . $cardId);
         exit;
     }
@@ -271,6 +348,36 @@ class CardController {
             'success' => true,
             'card' => $card,
             'transactions' => $transactions
+        ]);
+    }
+    
+    // Add a method to get bank with cards data as JSON for AJAX
+    public function getBankWithCardsJson() {
+        $bankId = $_GET['bank_id'] ?? null;
+    
+        if (!$bankId || !is_numeric($bankId)) {
+            echo json_encode(['error' => 'Invalid Bank ID']);
+            return;
+        }
+    
+        $cardModel = new CardModel();
+        $bank = $cardModel->getBankWithCardsById($bankId);
+    
+        if (!$bank) {
+            echo json_encode(['error' => 'Bank not found']);
+            return;
+        }
+        
+        // Check if the user can access this bank
+        if (!$this->authController->canAccessBank($bankId)) {
+            echo json_encode(['error' => 'Permission denied']);
+            return;
+        }
+        
+        // Return bank and cards data
+        echo json_encode([
+            'success' => true,
+            'bank' => $bank
         ]);
     }
     

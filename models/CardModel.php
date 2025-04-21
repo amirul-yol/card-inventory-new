@@ -77,8 +77,20 @@ class CardModel {
         if (!$stmt->execute()) {
             die("Error adding card: " . $this->db->error);
         }
-    
+        
+        $cardId = $this->db->insert_id;
         $stmt->close();
+        
+        return $cardId;
+    }
+    
+    public function getBankById($bankId) {
+        $query = "SELECT id, name, logo_url FROM banks WHERE id = ?";
+        $stmt = $this->db->prepare($query);
+        $stmt->bind_param('i', $bankId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        return $result->fetch_assoc();
     }
     
     public function getCardDetails($cardId) {
@@ -229,5 +241,61 @@ class CardModel {
         return $cards;
     }
     
+    public function getBankWithCardsById($bankId) {
+        $query = "
+            SELECT 
+                b.id AS bank_id, 
+                b.name AS bank_name, 
+                b.logo_url AS bank_logo, 
+                c.id AS card_id, 
+                c.name AS card_name, 
+                c.association, 
+                c.chip_type, 
+                c.type AS card_type, 
+                c.expired_at, 
+                c.quantity AS card_quantity 
+            FROM banks b
+            LEFT JOIN cards c ON b.id = c.bank_id
+            WHERE b.id = ?
+            ORDER BY c.id;
+        ";
+        
+        $stmt = $this->db->prepare($query);
+        $stmt->bind_param('i', $bankId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        $bank = null;
+        $cards = [];
+        
+        while ($row = $result->fetch_assoc()) {
+            if (!$bank) {
+                $bank = [
+                    'bank_id' => $row['bank_id'],
+                    'bank_name' => $row['bank_name'],
+                    'bank_logo' => $row['bank_logo'],
+                    'cards' => []
+                ];
+            }
+
+            if (!empty($row['card_id'])) { // Only add card details if a card exists
+                $cards[] = [
+                    'card_id' => $row['card_id'],
+                    'card_name' => $row['card_name'],
+                    'association' => $row['association'],
+                    'chip_type' => $row['chip_type'],
+                    'card_type' => $row['card_type'],
+                    'expired_at' => $row['expired_at'],
+                    'card_quantity' => $row['card_quantity'],
+                ];
+            }
+        }
+        
+        if ($bank) {
+            $bank['cards'] = $cards;
+        }
+        
+        return $bank;
+    }
 }
 ?>

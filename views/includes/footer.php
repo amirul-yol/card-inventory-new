@@ -236,11 +236,13 @@
                 
                 // Find the card data
                 let cardData = null;
-                bankData.cards.forEach(card => {
-                    if (card.card_id == cardId) {
-                        cardData = card;
-                    }
-                });
+                if (bankData && bankData.cards) {
+                    bankData.cards.forEach(card => {
+                        if (card.card_id == cardId) {
+                            cardData = card;
+                        }
+                    });
+                }
                 
                 if (!cardData) {
                     return;
@@ -321,18 +323,6 @@
                 const cardTransactionsContainer = document.getElementById('cardTransactionsContainer');
                 const transactionsContent = cardTransactionsContainer.querySelector('.transactions-content');
                 
-                // Find the card data
-                let cardData = null;
-                bankData.cards.forEach(card => {
-                    if (card.card_id == cardId) {
-                        cardData = card;
-                    }
-                });
-                
-                if (!cardData) {
-                    return;
-                }
-                
                 // Display a loading state
                 transactionsContent.innerHTML = '<div class="loading">Loading transactions...</div>';
                 
@@ -399,9 +389,9 @@
                                         <td class="transaction-date">${transaction.transaction_date}</td>
                                         <td class="transaction-remarks">${transaction.remarks}</td>
                                         <td>
-                                            <a href="index.php?path=card/editTransactionForm&transaction_id=${transaction.id}" class="edit-transaction-btn">
+                                            <button class="edit-transaction-btn" data-transaction-id="${transaction.id}" data-quantity="${transaction.quantity}">
                                                 Edit
-                                            </a>
+                                            </button>
                                         </td>
                                     </tr>
                                 `;
@@ -431,6 +421,19 @@
                                 showDepositPopup(cardId);
                             });
                         }
+                        
+                        // Add event listeners to edit transaction buttons
+                        const editTransactionBtns = transactionsContent.querySelectorAll('.edit-transaction-btn');
+                        if (editTransactionBtns.length > 0) {
+                            editTransactionBtns.forEach(btn => {
+                                btn.addEventListener('click', function(e) {
+                                    e.preventDefault();
+                                    const transactionId = this.getAttribute('data-transaction-id');
+                                    const quantity = this.getAttribute('data-quantity');
+                                    showEditTransactionPopup(transactionId, quantity, card.id);
+                                });
+                            });
+                        }
                     })
                     .catch(error => {
                         console.error('Error fetching transactions:', error);
@@ -442,6 +445,59 @@
                     });
             }
             
+            // Function to show edit transaction popup
+            function showEditTransactionPopup(transactionId, quantity, cardId) {
+                const editTransactionPopup = document.getElementById('editTransactionPopup');
+                const editTransactionForm = document.getElementById('editTransactionForm');
+                const transactionIdInput = document.getElementById('edit_transaction_id');
+                const cardIdInput = document.getElementById('edit_card_id');
+                const quantityInput = document.getElementById('edit_quantity');
+                const closePopupBtn = editTransactionPopup.querySelector('.close-popup');
+                const cancelBtn = document.getElementById('cancelEditTransactionBtn');
+                
+                // Set form values
+                transactionIdInput.value = transactionId;
+                cardIdInput.value = cardId;
+                quantityInput.value = quantity;
+                
+                // Show popup
+                editTransactionPopup.classList.add('show');
+                
+                // Focus quantity input for better UX
+                setTimeout(() => {
+                    quantityInput.focus();
+                    quantityInput.select(); // Select the text for easy editing
+                }, 100);
+                
+                // Function to close popup
+                function closeEditTransactionPopup() {
+                    editTransactionPopup.classList.remove('show');
+                    document.removeEventListener('keydown', handleEditTransactionEscKey);
+                }
+                
+                // Close popup events
+                closePopupBtn.addEventListener('click', closeEditTransactionPopup);
+                if (cancelBtn) {
+                    cancelBtn.addEventListener('click', closeEditTransactionPopup);
+                }
+                
+                // Also close when clicking outside
+                editTransactionPopup.addEventListener('click', function(e) {
+                    if (e.target === editTransactionPopup) {
+                        closeEditTransactionPopup();
+                    }
+                });
+                
+                // Add ESC key support
+                function handleEditTransactionEscKey(e) {
+                    if (e.key === 'Escape') {
+                        closeEditTransactionPopup();
+                    }
+                }
+                
+                document.addEventListener('keydown', handleEditTransactionEscKey);
+            }
+            
             // Function to show deposit popup
             function showDepositPopup(cardId) {
                 const depositPopup = document.getElementById('depositCardPopup');
@@ -449,6 +505,7 @@
                 const quantityInput = document.getElementById('quantity');
                 const closePopupBtn = document.querySelector('.close-popup');
                 const cancelBtn = document.getElementById('cancelDepositBtn');
+                const cardTransactionsContainer = document.getElementById('cardTransactionsContainer');
                 
                 // Set the card ID in the form
                 depositCardIdInput.value = cardId;
@@ -490,36 +547,45 @@
                 
                 document.addEventListener('keydown', handlePopupEscKey);
                 
-                // Handle form submission (optional - we're using the form's action attribute)
+                // Handle form submission via AJAX
                 const depositForm = document.getElementById('depositCardForm');
                 depositForm.addEventListener('submit', function(e) {
-                    // Form validation here if needed
-                    // e.preventDefault(); // Remove this if you want the form to submit normally
-                    
-                    // If you want to handle form submission via AJAX instead:
-                    /*
                     e.preventDefault();
-                    const formData = new FormData(depositForm);
                     
+                    // Create form data
+                    const formData = new FormData(this);
+                    const currentCardId = depositCardIdInput.value;
+                    
+                    // Send AJAX request
                     fetch('index.php?path=card/processDepositCard', {
                         method: 'POST',
-                        body: formData
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
                     })
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
+                            // Close the deposit popup
                             closeDepositPopup();
-                            // Refresh transactions
-                            fetchAndShowTransactions(cardId, bankData);
+                            
+                            // Show success notification
+                            showNotification(`Successfully deposited ${data.quantity} cards`, 'success');
+                            
+                            // Refresh transactions view if it's open
+                            if (cardTransactionsContainer && cardTransactionsContainer.style.display === 'block') {
+                                fetchAndShowTransactions(currentCardId, null);
+                            }
                         } else {
-                            alert(data.error || 'Failed to deposit card');
+                            // Display error notification
+                            showNotification(data.error || 'Failed to deposit card. Please try again.', 'error');
                         }
                     })
                     .catch(error => {
                         console.error('Error:', error);
-                        alert('An error occurred. Please try again.');
+                        showNotification('An error occurred. Please try again.', 'error');
                     });
-                    */
                 });
             }
         }
@@ -528,10 +594,14 @@
         const addCardBtn = document.getElementById('addCardBtn');
         const addCardPopup = document.getElementById('addCardPopup');
         const closeAddCardPopupBtns = addCardPopup ? addCardPopup.querySelectorAll('.close-popup, #cancelAddCardBtn') : [];
+        const addCardForm = document.getElementById('addCardForm');
         
-        if (addCardBtn && addCardPopup) {
+        if (addCardBtn && addCardPopup && addCardForm) {
             // Show popup when Add Card button is clicked
             addCardBtn.addEventListener('click', function() {
+                // Reset the form before showing the popup
+                addCardForm.reset();
+                
                 addCardPopup.classList.add('show');
                 
                 // Focus the first input for better UX
@@ -568,6 +638,211 @@
                     closeAddCardPopup();
                 }
             }
+            
+            // Handle form submission via AJAX
+            addCardForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Create form data
+                const formData = new FormData(this);
+                
+                // Send AJAX request
+                fetch('index.php?path=card/store', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Reset the form
+                        this.reset();
+                        
+                        // Close the Add Card popup
+                        closeAddCardPopup();
+                        
+                        // Show success notification
+                        showNotification('Card added successfully!', 'success');
+                        
+                        // Show the Card Details Modal with the bank's data
+                        showCardDetailsModal(data.bank_id, data.bank_name);
+                    } else {
+                        // Display error notification
+                        showNotification(data.error || 'Failed to add card. Please try again.', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showNotification('An error occurred. Please try again.', 'error');
+                });
+            });
+            
+            // Function to show the Card Details Modal for a specific bank
+            function showCardDetailsModal(bankId, bankName) {
+                const modal = document.getElementById('cardDetailsModal');
+                const modalBankName = document.getElementById('modalBankName');
+                const cardsTableContainer = document.getElementById('cardsTableContainer');
+                
+                if (modal && modalBankName) {
+                    // Display loading state
+                    modalBankName.textContent = bankName || 'Loading...';
+                    cardsTableContainer.innerHTML = '<div class="loading">Loading cards...</div>';
+                    
+                    // Show modal with animation
+                    modal.classList.add('show');
+                    modal.style.display = 'block';
+                    document.body.style.overflow = 'hidden'; // Prevent scrolling behind modal
+                    
+                    // Add keyboard support for ESC key to close modal
+                    document.addEventListener('keydown', handleEscKey);
+                    
+                    // Fetch fresh data from the server
+                    fetch(`index.php?path=card/getBankWithCardsJson&bank_id=${bankId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.error) {
+                                cardsTableContainer.innerHTML = `<div class="error-message">${data.error}</div>`;
+                                return;
+                            }
+                            
+                            const bankData = data.bank;
+                            
+                            // Set bank name in modal header
+                            modalBankName.textContent = bankData.bank_name;
+                            
+                            // Generate the cards table
+                            let tableHTML = '';
+                            if (bankData.cards && bankData.cards.length > 0) {
+                                tableHTML = `
+                                    <table class="cards-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Card Name</th>
+                                                <th>Association</th>
+                                                <th>Chip Type</th>
+                                                <th>Type</th>
+                                                <th>Quantity</th>
+                                                <th>Expiration Date</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                `;
+                                
+                                bankData.cards.forEach(card => {
+                                    tableHTML += `
+                                        <tr>
+                                            <td>${card.card_name}</td>
+                                            <td>${card.association}</td>
+                                            <td>${card.chip_type}</td>
+                                            <td>${card.card_type}</td>
+                                            <td class="card-quantity">${card.card_quantity}</td>
+                                            <td class="card-expiry">${card.expired_at}</td>
+                                            <td class="action-buttons">
+                                                <button class="action-btn view" title="View Details" data-card-id="${card.card_id}">
+                                                    <i class="fas fa-search"></i>
+                                                </button>
+                                                <button class="action-btn report" title="View Transactions" data-card-id="${card.card_id}">
+                                                    <i class="fas fa-file-alt"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    `;
+                                });
+                                
+                                tableHTML += `
+                                        </tbody>
+                                    </table>
+                                `;
+                            } else {
+                                tableHTML = '<div class="no-cards-message">No cards available for this bank.</div>';
+                            }
+                            
+                            cardsTableContainer.innerHTML = tableHTML;
+                            
+                            // Add event listeners to view detail buttons
+                            const viewButtons = cardsTableContainer.querySelectorAll('.action-btn.view');
+                            viewButtons.forEach(button => {
+                                button.addEventListener('click', function(e) {
+                                    e.preventDefault();
+                                    const cardId = this.getAttribute('data-card-id');
+                                    showCardDetails(cardId, bankData);
+                                });
+                            });
+                            
+                            // Add event listeners to view transactions buttons
+                            const transButtons = cardsTableContainer.querySelectorAll('.action-btn.report');
+                            transButtons.forEach(button => {
+                                button.addEventListener('click', function(e) {
+                                    e.preventDefault();
+                                    const cardId = this.getAttribute('data-card-id');
+                                    fetchAndShowTransactions(cardId, bankData);
+                                });
+                            });
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            cardsTableContainer.innerHTML = `
+                                <div class="error-message">
+                                    <p>Failed to load cards. Please try again later.</p>
+                                </div>
+                            `;
+                        });
+                }
+            }
+        }
+
+        // Notification system functions
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            const notificationMessage = document.getElementById('notification-message');
+            const notificationProgress = document.getElementById('notification-progress');
+            
+            // Set message
+            notificationMessage.textContent = message;
+            
+            // Set notification type
+            notification.className = 'notification show ' + type;
+            
+            // Setup progress bar animation
+            let width = 100;
+            const duration = 10000; // 10 seconds
+            const interval = 50; // update interval (ms)
+            const step = (interval / duration) * 100;
+            
+            // Clear any existing timer
+            if (window.notificationTimer) {
+                clearInterval(window.notificationTimer);
+            }
+            
+            // Set progress animation
+            notificationProgress.style.width = '100%';
+            window.notificationTimer = setInterval(() => {
+                width -= step;
+                notificationProgress.style.width = width + '%';
+                
+                if (width <= 0) {
+                    clearInterval(window.notificationTimer);
+                    hideNotification();
+                }
+            }, interval);
+        }
+        
+        function hideNotification() {
+            const notification = document.getElementById('notification');
+            notification.classList.remove('show');
+            
+            if (window.notificationTimer) {
+                clearInterval(window.notificationTimer);
+            }
+        }
+        
+        // Setup notification close button
+        const notificationCloseBtn = document.getElementById('notification-close');
+        if (notificationCloseBtn) {
+            notificationCloseBtn.addEventListener('click', hideNotification);
         }
 
         // View All Banks Popup functionality
@@ -618,13 +893,26 @@
             
             // Add Bank functionality
             if (showAddBankBtn && addBankPopup) {
+                const addBankForm = document.getElementById('addBankForm');
+                
                 // Show Add Bank popup when button is clicked
                 showAddBankBtn.addEventListener('click', function() {
+                    // Reset the form before showing
+                    if (addBankForm) {
+                        addBankForm.reset();
+                    }
+                    
                     // Hide the All Banks popup temporarily
                     allBanksPopup.classList.remove('show');
                     
                     // Show the Add Bank popup
                     addBankPopup.classList.add('show');
+                    
+                    // Focus the first input for better UX
+                    setTimeout(() => {
+                        const firstInput = addBankPopup.querySelector('input');
+                        if (firstInput) firstInput.focus();
+                    }, 100);
                     
                     // Add ESC key support
                     document.addEventListener('keydown', handleAddBankEscKey);
@@ -671,7 +959,224 @@
                         allBanksPopup.classList.add('show');
                     }
                 }
+                
+                // Handle form submission - clear the form after submit
+                if (addBankForm) {
+                    addBankForm.addEventListener('submit', function(e) {
+                        e.preventDefault();
+                        
+                        // Create form data for AJAX submission
+                        const formData = new FormData(this);
+                        
+                        // Send AJAX request
+                        fetch('index.php?path=bank/store', {
+                            method: 'POST',
+                            body: formData,
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                // Reset the form
+                                this.reset();
+                                
+                                // Close the Add Bank popup
+                                closeAddBankPopup();
+                                
+                                // Show success notification
+                                showNotification('Bank added successfully!', 'success');
+                                
+                                // Refresh the banks list in the all banks popup
+                                refreshBanksList();
+                                
+                                // Show All Banks popup again
+                                allBanksPopup.classList.add('show');
+                            } else {
+                                // Display error notification
+                                showNotification(data.error || 'Failed to add bank. Please try again.', 'error');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            showNotification('An error occurred. Please try again.', 'error');
+                        });
+                    });
+                    
+                    // Function to refresh the banks list
+                    function refreshBanksList() {
+                        fetch('index.php?path=bank/getBanksJson')
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.error) {
+                                    showNotification(data.error, 'error');
+                                    return;
+                                }
+                                
+                                const allBanks = data.banks;
+                                const banksGrid = allBanksPopup.querySelector('.banks-grid-items');
+                                
+                                if (banksGrid && allBanks && allBanks.length > 0) {
+                                    // Clear existing content
+                                    banksGrid.innerHTML = '';
+                                    
+                                    // Configuration for pagination
+                                    const banksPerPage = 8; // 2 rows of 4 banks
+                                    const totalBanks = allBanks.length;
+                                    const totalPages = Math.ceil(totalBanks / banksPerPage);
+                                    
+                                    // Update pagination elements
+                                    if (currentPageEl) {
+                                        currentPageEl.textContent = '1';
+                                    }
+                                    
+                                    // Add bank items to the grid
+                                    allBanks.forEach((bank, index) => {
+                                        const bankPage = Math.floor(index / banksPerPage) + 1;
+                                        const bankHtml = `
+                                            <div class="bank-grid-item" data-page="${bankPage}" style="display: ${bankPage === 1 ? 'flex' : 'none'}">
+                                                <div class="bank-logo-container">
+                                                    <img src="${bank.bank_logo}" alt="${bank.bank_name}" class="bank-card-logo">
+                                                </div>
+                                                <div class="bank-card-info">
+                                                    <div class="bank-card-title">${bank.bank_name}</div>
+                                                    <div class="bank-card-stats">
+                                                        <span class="card-count">
+                                                            <i class="fas fa-credit-card"></i>
+                                                            ${bank.card_count} card${bank.card_count != 1 ? 's' : ''}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        `;
+                                        banksGrid.insertAdjacentHTML('beforeend', bankHtml);
+                                    });
+                                    
+                                    // Also refresh the carousel on the main page if it exists
+                                    refreshBankCarousel(allBanks);
+                                    
+                                    // Update pagination controls
+                                    if (prevPageBtn && nextPageBtn) {
+                                        prevPageBtn.disabled = true;
+                                        nextPageBtn.disabled = totalPages <= 1;
+                                    }
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error refreshing banks:', error);
+                                showNotification('Failed to refresh banks list.', 'error');
+                            });
+                    }
+                    
+                    // Function to refresh the bank carousel on the main page
+                    function refreshBankCarousel(banks) {
+                        const carousel = document.querySelector('.bank-carousel');
+                        if (carousel && banks && banks.length > 0) {
+                            // Clear existing content
+                            carousel.innerHTML = '';
+                            
+                            // Add bank items to the carousel
+                            banks.forEach(bank => {
+                                const bankHtml = `
+                                    <div class="bank-card-item" data-bank-id="${bank.bank_id}">
+                                        <div class="bank-logo-container">
+                                            <img src="${bank.bank_logo}" alt="${bank.bank_name}" class="bank-card-logo">
+                                        </div>
+                                        <div class="bank-card-info">
+                                            <div class="bank-card-title">${bank.bank_name}</div>
+                                            <div class="bank-card-stats">
+                                                <span class="card-count">
+                                                    <i class="fas fa-credit-card"></i>
+                                                    ${bank.card_count} card${bank.card_count != 1 ? 's' : ''}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                                carousel.insertAdjacentHTML('beforeend', bankHtml);
+                            });
+                            
+                            // Reinitialize carousel event listeners
+                            const bankCardItems = carousel.querySelectorAll('.bank-card-item');
+                            bankCardItems.forEach(card => {
+                                card.addEventListener('click', function() {
+                                    const bankId = this.getAttribute('data-bank-id');
+                                    const bankData = banksWithCards[bankId];
+                                    
+                                    if (bankData) {
+                                        // Show modal with bank details (reusing existing code)
+                                        modalBankName.textContent = bankData.bank_name;
+                                        
+                                        // Generate and display cards table
+                                        // ... (existing code will handle this)
+                                        
+                                        modal.classList.add('show');
+                                        modal.style.display = 'block';
+                                        document.body.style.overflow = 'hidden';
+                                        document.addEventListener('keydown', handleEscKey);
+                                    }
+                                });
+                            });
+                            
+                            // Reset carousel position
+                            currentPosition = 0;
+                            carousel.style.transform = 'translateX(0)';
+                            updateArrows();
+                        }
+                    }
+                }
             }
+        }
+
+        // Handle edit transaction form submission
+        const editTransactionForm = document.getElementById('editTransactionForm');
+        if (editTransactionForm) {
+            editTransactionForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Create form data
+                const formData = new FormData(this);
+                const transactionId = document.getElementById('edit_transaction_id').value;
+                const cardId = document.getElementById('edit_card_id').value;
+                
+                // Send AJAX request
+                fetch('index.php?path=card/processEditTransaction', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Reset the form
+                        this.reset();
+                        
+                        // Close the Edit Transaction popup
+                        const editTransactionPopup = document.getElementById('editTransactionPopup');
+                        if (editTransactionPopup) {
+                            editTransactionPopup.classList.remove('show');
+                        }
+                        
+                        // Show success notification
+                        showNotification(`Transaction updated successfully to ${data.quantity}`, 'success');
+                        
+                        // Refresh transactions view if it's open
+                        if (cardTransactionsContainer && cardTransactionsContainer.style.display === 'block') {
+                            fetchAndShowTransactions(cardId, null);
+                        }
+                    } else {
+                        // Display error notification
+                        showNotification(data.error || 'Failed to update transaction. Please try again.', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showNotification('An error occurred. Please try again.', 'error');
+                });
+            });
         }
 
         // Pagination functionality
@@ -726,4 +1231,5 @@
     </script>
 </body>
 </html>
+
 

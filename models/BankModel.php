@@ -51,9 +51,8 @@ class BankModel {
         ";
         $stmt = $this->db->prepare($query);
         $stmt->bind_param("ss", $name, $logoUrl);
-        if (!$stmt->execute()) {
-            die("Error adding bank: " . $this->db->error);
-        }
+        $success = $stmt->execute();
         $stmt->close();
+        return $success;
     }
 }

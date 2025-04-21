@@ -4,15 +4,39 @@ require_once 'controllers/AuthController.php';
 
 class BankController {
     private $authController;
+    private $bankModel;
     
     public function __construct() {
         $this->authController = new AuthController();
+        $this->bankModel = new BankModel();
     }
     
     // Get all banks with minimal information
     public function getAllBanks() {
-        $model = new BankModel();
-        return $model->getBanksWithCardCount();
+        return $this->bankModel->getBanksWithCardCount();
+    }
+    
+    // Get banks as JSON for AJAX requests
+    public function getBanksJson() {
+        try {
+            $banks = $this->getAllBanks();
+            
+            // Return JSON response
+            header('Content-Type: application/json');
+            echo json_encode([
+                'success' => true,
+                'banks' => $banks
+            ]);
+            exit;
+        } catch (Exception $e) {
+            // Return error response
+            header('Content-Type: application/json');
+            echo json_encode([
+                'success' => false,
+                'error' => $e->getMessage()
+            ]);
+            exit;
+        }
     }
     
     public function index() {
@@ -24,8 +48,7 @@ class BankController {
         }
         
         // For Admin, PO, and LO users, show all banks
-        $model = new BankModel();
-        $banks = $model->getBanksWithCardCount();
+        $banks = $this->bankModel->getBanksWithCardCount();
         include 'views/bank/index.php';
     }
 
@@ -39,21 +62,82 @@ class BankController {
     }
 
     public function store() {
-        // Only Admin should be able to create banks
-        if (!$this->authController->isAdmin()) {
-            die("You do not have permission to create banks.");
+        // Get the form data
+        $name = $_POST['name'] ?? '';
+        
+        // Process logo upload if provided
+        $logo = '';
+        if (isset($_FILES['logo_url']) && $_FILES['logo_url']['error'] === UPLOAD_ERR_OK) {
+            $uploadDir = 'uploads/logos/';
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0777, true);
+            }
+            
+            $fileExtension = pathinfo($_FILES['logo_url']['name'], PATHINFO_EXTENSION);
+            $fileName = uniqid('bank_') . '.' . $fileExtension;
+            $targetFile = $uploadDir . $fileName;
+            
+            if (move_uploaded_file($_FILES['logo_url']['tmp_name'], $targetFile)) {
+                $logo = $targetFile;
+            }
         }
         
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $name = $_POST['name'];
-            $logoUrl = $_POST['logo_url'];
-
-            $model = new BankModel();
-            $model->addBank($name, $logoUrl);
-
-            header('Location: index.php?path=bank');
+        if (empty($logo)) {
+            // Default logo if none provided
+            $logo = 'uploads/logos/default_bank.png';
+        }
+        
+        // Validate input
+        if (empty($name)) {
+            // Check if this is an AJAX request
+            if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+                header('Content-Type: application/json');
+                echo json_encode([
+                    'success' => false,
+                    'error' => 'Bank name is required'
+                ]);
+                exit;
+            }
+            
+            $_SESSION['error'] = 'Bank name is required';
+            header('Location: index.php?path=bank/create');
             exit;
         }
+        
+        // Create the bank
+        $bankData = [
+            'name' => $name,
+            'logo_url' => $logo
+        ];
+        
+        $result = $this->bankModel->addBank($name, $logo);
+        
+        // Check if this is an AJAX request
+        if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+            header('Content-Type: application/json');
+            if ($result) {
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'Bank added successfully'
+                ]);
+            } else {
+                echo json_encode([
+                    'success' => false,
+                    'error' => 'Failed to add bank'
+                ]);
+            }
+            exit;
+        }
+        
+        // Regular form submission response
+        if ($result) {
+            $_SESSION['success'] = 'Bank added successfully';
+        } else {
+            $_SESSION['error'] = 'Failed to add bank';
+        }
+        
+        header('Location: index.php');
+        exit;
     }
 
     public function details() {
@@ -68,8 +152,7 @@ class BankController {
             die("You do not have permission to view this bank.");
         }
         
-        $model = new BankModel();
-        $bank = $model->getBankDetails($bankId);
+        $bank = $this->bankModel->getBankDetails($bankId);
         
         if (!$bank) {
             die("Bank not found.");
