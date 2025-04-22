@@ -97,6 +97,62 @@
             });
         }
         
+        // Reports carousel functionality
+        const reportsCarousel = document.querySelector('.reports-carousel');
+        const reportsPrevArrow = document.querySelector('.reports-prev-arrow');
+        const reportsNextArrow = document.querySelector('.reports-next-arrow');
+        
+        if (reportsCarousel && reportsPrevArrow && reportsNextArrow) {
+            const reportCards = reportsCarousel.querySelectorAll('.report-carousel-item');
+            const cardWidth = 280; // width of each report card
+            const gap = 16; // gap between cards (1rem)
+            const totalWidth = cardWidth + gap;
+            const visibleCards = Math.floor(reportsCarousel.offsetWidth / totalWidth);
+            
+            let currentReportPosition = 0;
+            
+            // Update arrow state
+            function updateReportArrows() {
+                reportsPrevArrow.style.opacity = currentReportPosition <= 0 ? '0.5' : '1';
+                reportsPrevArrow.style.cursor = currentReportPosition <= 0 ? 'default' : 'pointer';
+                
+                const maxPosition = reportCards.length - visibleCards;
+                reportsNextArrow.style.opacity = currentReportPosition >= maxPosition ? '0.5' : '1';
+                reportsNextArrow.style.cursor = currentReportPosition >= maxPosition ? 'default' : 'pointer';
+            }
+            
+            // Initialize arrows
+            updateReportArrows();
+            
+            // Scroll to previous set of cards
+            reportsPrevArrow.addEventListener('click', () => {
+                if (currentReportPosition > 0) {
+                    currentReportPosition--;
+                    reportsCarousel.style.transform = `translateX(-${currentReportPosition * totalWidth}px)`;
+                    updateReportArrows();
+                }
+            });
+            
+            // Scroll to next set of cards
+            reportsNextArrow.addEventListener('click', () => {
+                if (currentReportPosition < reportCards.length - visibleCards) {
+                    currentReportPosition++;
+                    reportsCarousel.style.transform = `translateX(-${currentReportPosition * totalWidth}px)`;
+                    updateReportArrows();
+                }
+            });
+            
+            // Handle window resize
+            window.addEventListener('resize', () => {
+                const newVisibleCards = Math.floor(reportsCarousel.offsetWidth / totalWidth);
+                if (newVisibleCards !== visibleCards && currentReportPosition > reportCards.length - newVisibleCards) {
+                    currentReportPosition = Math.max(0, reportCards.length - newVisibleCards);
+                    reportsCarousel.style.transform = `translateX(-${currentReportPosition * totalWidth}px)`;
+                }
+                updateReportArrows();
+            });
+        }
+        
         // Modal functionality for bank cards
         const bankCardItems = document.querySelectorAll('.bank-card-item');
         const modal = document.getElementById('cardDetailsModal');
@@ -1226,6 +1282,465 @@
                     updatePageControls();
                 }
             });
+        }
+        
+        // Reports Section Functionality
+        const viewAllReportsBtn = document.getElementById('viewAllReportsBtn');
+        const withdrawCardBtn = document.getElementById('withdrawCardBtn');
+        const allReportsPopup = document.getElementById('allReportsPopup');
+        const withdrawCardPopup = document.getElementById('withdrawCardPopup');
+        const reportCards = document.querySelectorAll('.report-card');
+        const reportDetailsModal = document.getElementById('reportDetailsModal');
+        
+        // View All Reports functionality
+        if (viewAllReportsBtn && allReportsPopup) {
+            // Show popup when View All Reports button is clicked
+            viewAllReportsBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                allReportsPopup.classList.add('show');
+                
+                // Add ESC key support
+                document.addEventListener('keydown', handleReportsEscKey);
+            });
+            
+            // Close popup buttons
+            const closeReportsPopupBtns = allReportsPopup.querySelectorAll('.close-popup');
+            closeReportsPopupBtns.forEach(btn => {
+                btn.addEventListener('click', closeAllReportsPopup);
+            });
+            
+            // Close when clicking outside
+            allReportsPopup.addEventListener('click', function(e) {
+                if (e.target === allReportsPopup) {
+                    closeAllReportsPopup();
+                }
+            });
+            
+            // Function to close popup
+            function closeAllReportsPopup() {
+                allReportsPopup.classList.remove('show');
+                document.removeEventListener('keydown', handleReportsEscKey);
+            }
+            
+            // ESC key handler
+            function handleReportsEscKey(e) {
+                if (e.key === 'Escape') {
+                    closeAllReportsPopup();
+                }
+            }
+        }
+        
+        // Withdraw Card functionality
+        if (withdrawCardBtn && withdrawCardPopup) {
+            // Show popup when Withdraw Card button is clicked
+            withdrawCardBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // If all reports popup is shown, hide it
+                if (allReportsPopup) {
+                    allReportsPopup.classList.remove('show');
+                }
+                
+                withdrawCardPopup.classList.add('show');
+                
+                // Add ESC key support
+                document.addEventListener('keydown', handleWithdrawEscKey);
+            });
+            
+            // Back to reports button
+            const backToReportsBtn = document.getElementById('backToReportsBtn');
+            if (backToReportsBtn) {
+                backToReportsBtn.addEventListener('click', function() {
+                    closeWithdrawCardPopup();
+                    // Show All Reports popup again
+                    if (allReportsPopup) {
+                        allReportsPopup.classList.add('show');
+                    }
+                });
+            }
+            
+            // Cancel button
+            const cancelWithdrawCardBtn = document.getElementById('cancelWithdrawCardBtn');
+            if (cancelWithdrawCardBtn) {
+                cancelWithdrawCardBtn.addEventListener('click', closeWithdrawCardPopup);
+            }
+            
+            // Close popup buttons
+            const closeWithdrawPopupBtns = withdrawCardPopup.querySelectorAll('.close-popup');
+            closeWithdrawPopupBtns.forEach(btn => {
+                btn.addEventListener('click', closeWithdrawCardPopup);
+            });
+            
+            // Close when clicking outside
+            withdrawCardPopup.addEventListener('click', function(e) {
+                if (e.target === withdrawCardPopup) {
+                    closeWithdrawCardPopup();
+                }
+            });
+            
+            // Function to close popup
+            function closeWithdrawCardPopup() {
+                withdrawCardPopup.classList.remove('show');
+                document.removeEventListener('keydown', handleWithdrawEscKey);
+                
+                // Reset form
+                const withdrawCardForm = document.getElementById('withdrawCardForm');
+                if (withdrawCardForm) {
+                    withdrawCardForm.reset();
+                }
+                
+                // Hide card selection and details containers
+                const cardSelectionContainer = document.getElementById('card-selection-container');
+                const withdrawDetailsContainer = document.getElementById('withdraw-details-container');
+                if (cardSelectionContainer) {
+                    cardSelectionContainer.style.display = 'none';
+                }
+                if (withdrawDetailsContainer) {
+                    withdrawDetailsContainer.style.display = 'none';
+                }
+                
+                // Disable submit button
+                const submitWithdrawBtn = document.getElementById('submitWithdrawBtn');
+                if (submitWithdrawBtn) {
+                    submitWithdrawBtn.disabled = true;
+                }
+            }
+            
+            // ESC key handler
+            function handleWithdrawEscKey(e) {
+                if (e.key === 'Escape') {
+                    closeWithdrawCardPopup();
+                }
+            }
+            
+            // Bank selection change handler
+            const withdrawBankSelect = document.getElementById('withdraw-bank');
+            if (withdrawBankSelect) {
+                withdrawBankSelect.addEventListener('change', function() {
+                    const bankId = this.value;
+                    const cardSelectionContainer = document.getElementById('card-selection-container');
+                    
+                    if (bankId) {
+                        // Show card selection container
+                        if (cardSelectionContainer) {
+                            cardSelectionContainer.style.display = 'block';
+                        }
+                        
+                        // In a real implementation, you would load the cards for the selected bank here
+                        // For now, we'll just show the container with dummy options
+                        const withdrawCardSelect = document.getElementById('withdraw-card');
+                        if (withdrawCardSelect) {
+                            // Clear previous options except the first one
+                            while (withdrawCardSelect.options.length > 1) {
+                                withdrawCardSelect.remove(1);
+                            }
+                            
+                            // Add dummy options
+                            for (let i = 1; i <= 3; i++) {
+                                const option = document.createElement('option');
+                                option.value = i;
+                                option.textContent = `Demo Card ${i}`;
+                                withdrawCardSelect.appendChild(option);
+                            }
+                        }
+                    } else {
+                        // Hide card selection container if no bank selected
+                        if (cardSelectionContainer) {
+                            cardSelectionContainer.style.display = 'none';
+                        }
+                    }
+                });
+            }
+            
+            // Card selection change handler
+            const withdrawCardSelect = document.getElementById('withdraw-card');
+            if (withdrawCardSelect) {
+                withdrawCardSelect.addEventListener('change', function() {
+                    const cardId = this.value;
+                    const withdrawDetailsContainer = document.getElementById('withdraw-details-container');
+                    const submitWithdrawBtn = document.getElementById('submitWithdrawBtn');
+                    
+                    if (cardId) {
+                        // Show withdraw details container
+                        if (withdrawDetailsContainer) {
+                            withdrawDetailsContainer.style.display = 'block';
+                        }
+                        
+                        // Enable submit button
+                        if (submitWithdrawBtn) {
+                            submitWithdrawBtn.disabled = false;
+                        }
+                    } else {
+                        // Hide withdraw details container if no card selected
+                        if (withdrawDetailsContainer) {
+                            withdrawDetailsContainer.style.display = 'none';
+                        }
+                        
+                        // Disable submit button
+                        if (submitWithdrawBtn) {
+                            submitWithdrawBtn.disabled = true;
+                        }
+                    }
+                });
+            }
+        }
+        
+        // Show Withdraw Card popup from All Reports popup
+        const showWithdrawCardBtn = document.getElementById('showWithdrawCardBtn');
+        if (showWithdrawCardBtn && withdrawCardPopup && allReportsPopup) {
+            showWithdrawCardBtn.addEventListener('click', function() {
+                // Hide All Reports popup
+                allReportsPopup.classList.remove('show');
+                
+                // Show Withdraw Card popup
+                withdrawCardPopup.classList.add('show');
+                
+                // Add ESC key support
+                document.addEventListener('keydown', handleWithdrawEscKey);
+            });
+        }
+        
+        // Report Card Click Functionality
+        if (reportCards.length && reportDetailsModal) {
+            const closeReportModalBtns = reportDetailsModal.querySelectorAll('.close-modal');
+            
+            // Show report details modal when a report card is clicked
+            reportCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    const reportId = this.getAttribute('data-report-id');
+                    
+                    // In a real implementation, you would load the report data from the server
+                    // Now we'll be setting up for that - we'd eventually make an AJAX call like:
+                    // fetch(`index.php?path=report/getReportDetailsJson&report_id=${reportId}`)
+                    
+                    // For now, we'll just use the status from the card
+                    const statusEl = this.querySelector('.report-status');
+                    const isPending = statusEl.classList.contains('status-pending');
+                    const bankNameEl = this.querySelector('.report-bank-name');
+                    const bankName = bankNameEl ? bankNameEl.textContent.trim() : 'Unknown Bank';
+                    const dateEl = this.querySelector('.report-date');
+                    const reportDate = dateEl ? dateEl.textContent.trim() : '-';
+                    
+                    // Update report title and ID
+                    const reportBankName = document.getElementById('reportBankName');
+                    const reportIdEl = document.getElementById('reportId');
+                    if (reportBankName) reportBankName.textContent = bankName;
+                    if (reportIdEl) reportIdEl.textContent = '#' + reportId;
+                    
+                    // Update report date
+                    const reportDateEl = document.getElementById('reportDate');
+                    if (reportDateEl) reportDateEl.textContent = reportDate;
+                    
+                    // Update modal content based on report status
+                    const reportStatusBadge = document.getElementById('reportStatusBadge');
+                    if (reportStatusBadge) {
+                        const status = statusEl.textContent.trim();
+                        reportStatusBadge.textContent = status;
+                        
+                        // Set appropriate color based on status
+                        if (status === 'Pending') {
+                            reportStatusBadge.style.backgroundColor = '#f5a623';
+                        } else if (status === 'Verified') {
+                            reportStatusBadge.style.backgroundColor = '#47c98e';
+                        } else if (status === 'Rejected') {
+                            reportStatusBadge.style.backgroundColor = '#f44336';
+                        }
+                    }
+                    
+                    // Update action buttons based on user role and report status
+                    const verifyBtn = document.getElementById('switchToVerifyViewBtn');
+                    if (verifyBtn) {
+                        // Check if user is Production Officer (in a real app, check from server data)
+                        const isPO = verifyBtn.classList.contains('btn-verify');
+                        verifyBtn.style.display = (isPending && isPO) ? 'flex' : 'none';
+                    }
+                    
+                    // Show modal
+                    reportDetailsModal.classList.add('show');
+                    reportDetailsModal.style.display = 'block';
+                    document.body.style.overflow = 'hidden'; // Prevent scrolling
+                    
+                    // Add keyboard support for ESC key
+                    document.addEventListener('keydown', handleReportModalEscKey);
+                });
+            });
+            
+            // Also attach event listeners to carousel items
+            const reportCarouselItems = document.querySelectorAll('.report-carousel-item');
+            reportCarouselItems.forEach(card => {
+                card.addEventListener('click', function() {
+                    const reportId = this.getAttribute('data-report-id');
+                    
+                    // In a real implementation, you would load the report data from the server
+                    // Now we'll be setting up for that - we'd eventually make an AJAX call like:
+                    // fetch(`index.php?path=report/getReportDetailsJson&report_id=${reportId}`)
+                    
+                    // For now, we'll just use the status from the card
+                    const statusEl = this.querySelector('.report-status');
+                    const isPending = statusEl.classList.contains('status-pending');
+                    const bankNameEl = this.querySelector('.report-bank-name');
+                    const bankName = bankNameEl ? bankNameEl.textContent.trim() : 'Unknown Bank';
+                    const dateEl = this.querySelector('.report-date');
+                    const reportDate = dateEl ? dateEl.textContent.trim() : '-';
+                    
+                    // Update report title and ID
+                    const reportBankName = document.getElementById('reportBankName');
+                    const reportIdEl = document.getElementById('reportId');
+                    if (reportBankName) reportBankName.textContent = bankName;
+                    if (reportIdEl) reportIdEl.textContent = '#' + reportId;
+                    
+                    // Update report date
+                    const reportDateEl = document.getElementById('reportDate');
+                    if (reportDateEl) reportDateEl.textContent = reportDate;
+                    
+                    // Update modal content based on report status
+                    const reportStatusBadge = document.getElementById('reportStatusBadge');
+                    if (reportStatusBadge) {
+                        const status = statusEl.textContent.trim();
+                        reportStatusBadge.textContent = status;
+                        
+                        // Set appropriate color based on status
+                        if (status === 'Pending') {
+                            reportStatusBadge.style.backgroundColor = '#f5a623';
+                        } else if (status === 'Verified') {
+                            reportStatusBadge.style.backgroundColor = '#47c98e';
+                        } else if (status === 'Rejected') {
+                            reportStatusBadge.style.backgroundColor = '#f44336';
+                        }
+                    }
+                    
+                    // Update action buttons based on user role and report status
+                    const verifyBtn = document.getElementById('switchToVerifyViewBtn');
+                    if (verifyBtn) {
+                        // Check if user is Production Officer (in a real app, check from server data)
+                        const isPO = verifyBtn.classList.contains('btn-verify');
+                        verifyBtn.style.display = (isPending && isPO) ? 'flex' : 'none';
+                    }
+                    
+                    // Show modal
+                    reportDetailsModal.classList.add('show');
+                    reportDetailsModal.style.display = 'block';
+                    document.body.style.overflow = 'hidden'; // Prevent scrolling
+                    
+                    // Add keyboard support for ESC key
+                    document.addEventListener('keydown', handleReportModalEscKey);
+                });
+            });
+            
+            // Close modal functions
+            if (closeReportModalBtns.length) {
+                closeReportModalBtns.forEach(btn => {
+                    btn.addEventListener('click', closeReportModal);
+                });
+            }
+            
+            // Close when clicking outside
+            window.addEventListener('click', function(event) {
+                if (event.target === reportDetailsModal) {
+                    closeReportModal();
+                }
+            });
+            
+            // Function to close modal
+            function closeReportModal() {
+                reportDetailsModal.classList.remove('show');
+                setTimeout(() => {
+                    reportDetailsModal.style.display = 'none';
+                    document.body.style.overflow = ''; // Re-enable scrolling
+                    
+                    // Switch back to the overview view
+                    switchToOverviewView();
+                    
+                    // Remove keyboard listener
+                    document.removeEventListener('keydown', handleReportModalEscKey);
+                }, 300);
+            }
+            
+            // ESC key handler
+            function handleReportModalEscKey(e) {
+                if (e.key === 'Escape') {
+                    closeReportModal();
+                }
+            }
+            
+            // Switch between report views
+            const reportOverviewContainer = document.getElementById('reportOverviewContainer');
+            const reportVerificationContainer = document.getElementById('reportVerificationContainer');
+            const rejectCardContainer = document.getElementById('rejectCardContainer');
+            const switchToVerifyViewBtn = document.getElementById('switchToVerifyViewBtn');
+            const backToReportOverviewBtn = document.getElementById('backToReportOverviewBtn');
+            
+            // Function to switch to overview view
+            function switchToOverviewView() {
+                if (reportOverviewContainer && reportVerificationContainer && rejectCardContainer) {
+                    reportOverviewContainer.style.display = 'block';
+                    reportVerificationContainer.style.display = 'none';
+                    rejectCardContainer.style.display = 'none';
+                }
+            }
+            
+            // Switch to verification view
+            if (switchToVerifyViewBtn && reportVerificationContainer) {
+                switchToVerifyViewBtn.addEventListener('click', function() {
+                    reportOverviewContainer.style.display = 'none';
+                    reportVerificationContainer.style.display = 'block';
+                });
+            }
+            
+            // Back to overview from verification view
+            if (backToReportOverviewBtn) {
+                backToReportOverviewBtn.addEventListener('click', switchToOverviewView);
+            }
+            
+            // Reject card functionality
+            const rejectButtons = reportDetailsModal.querySelectorAll('.btn-reject');
+            const backToVerificationBtn = document.getElementById('backToVerificationBtn');
+            
+            // Show reject card form when a reject button is clicked
+            if (rejectButtons.length && rejectCardContainer) {
+                rejectButtons.forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const transactionId = this.getAttribute('data-transaction-id');
+                        
+                        // In a real implementation, you would get the card details from the server
+                        // For this demo, we'll use placeholder values
+                        const cardNameInput = document.getElementById('reject-card-name');
+                        const originalQuantityInput = document.getElementById('reject-original-quantity');
+                        const transactionIdInput = document.getElementById('reject-transaction-id');
+                        
+                        if (cardNameInput && originalQuantityInput && transactionIdInput) {
+                            const row = this.closest('tr');
+                            const cardName = row.cells[0].textContent;
+                            const quantity = row.cells[1].textContent;
+                            
+                            cardNameInput.value = cardName;
+                            originalQuantityInput.value = quantity;
+                            transactionIdInput.value = transactionId;
+                        }
+                        
+                        // Show reject view
+                        reportVerificationContainer.style.display = 'none';
+                        rejectCardContainer.style.display = 'block';
+                    });
+                });
+            }
+            
+            // Back to verification view from reject card form
+            if (backToVerificationBtn) {
+                backToVerificationBtn.addEventListener('click', function() {
+                    rejectCardContainer.style.display = 'none';
+                    reportVerificationContainer.style.display = 'block';
+                });
+            }
+            
+            // Cancel reject card form
+            const cancelRejectBtn = document.getElementById('cancelRejectBtn');
+            if (cancelRejectBtn) {
+                cancelRejectBtn.addEventListener('click', function() {
+                    rejectCardContainer.style.display = 'none';
+                    reportVerificationContainer.style.display = 'block';
+                });
+            }
         }
     });
     </script>

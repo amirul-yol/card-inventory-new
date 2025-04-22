@@ -390,9 +390,52 @@ class ReportModel {
     }
 
     public function updateTransactionAmount($transactionId, $newQuantity) {
-        $stmt = $this->db->prepare("UPDATE transactions SET quantity = ? WHERE id = ?");
-        return $stmt->execute([$newQuantity, $transactionId]);
+        $sql = "UPDATE transactions SET quantity = ? WHERE id = ?";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bind_param("ii", $newQuantity, $transactionId);
+        return $stmt->execute();
     }
 
+    /**
+     * Get recent reports across all banks
+     * @param int $limit Maximum number of reports to retrieve
+     * @return array Reports with bank information
+     */
+    public function getRecentReports($limit = 10) {
+        $query = "SELECT r.id, r.report_date, r.bank_id, r.status, b.name AS bank_name, b.logo_url AS bank_logo 
+                 FROM reports r
+                 JOIN banks b ON r.bank_id = b.id 
+                 ORDER BY r.report_date DESC, r.id DESC
+                 LIMIT ?";
+        
+        $stmt = $this->db->prepare($query);
+        $stmt->bind_param('i', $limit);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        return $result->fetch_all(MYSQLI_ASSOC);
+    }
+    
+    /**
+     * Get recent reports for a specific bank
+     * @param int $bankId Bank ID to filter by
+     * @param int $limit Maximum number of reports to retrieve
+     * @return array Reports for the specified bank
+     */
+    public function getRecentReportsByBank($bankId, $limit = 10) {
+        $query = "SELECT r.id, r.report_date, r.bank_id, r.status, b.name AS bank_name, b.logo_url AS bank_logo 
+                 FROM reports r
+                 JOIN banks b ON r.bank_id = b.id 
+                 WHERE r.bank_id = ?
+                 ORDER BY r.report_date DESC, r.id DESC
+                 LIMIT ?";
+        
+        $stmt = $this->db->prepare($query);
+        $stmt->bind_param('ii', $bankId, $limit);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        return $result->fetch_all(MYSQLI_ASSOC);
+    }
 }
 ?>

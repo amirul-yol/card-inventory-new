@@ -24,6 +24,11 @@ class DashboardController {
                     'totalReports' => $this->model->getTotalReportsByBank($bankId),
                     'totalCards' => $this->model->getTotalCardsByBank($bankId),
                 ];
+                
+                // Load reports for this bank
+                require_once 'models/ReportModel.php';
+                $reportModel = new ReportModel();
+                $recentReports = $reportModel->getRecentReportsByBank($bankId, 12);
             } else {
                 // For Admin, PO, LO users - show system-wide totals
                 $data = [
@@ -32,6 +37,20 @@ class DashboardController {
                     'totalBanks' => $this->model->getTotalBanks(),
                     'totalUsers' => $this->model->getTotalUsers(),
                 ];
+                
+                // Load reports for all banks
+                require_once 'models/ReportModel.php';
+                $reportModel = new ReportModel();
+                $recentReports = $reportModel->getRecentReports(12);
+            }
+            
+            // Get all banks with their logos for the reports display
+            require_once 'controllers/BankController.php';
+            $bankController = new BankController();
+            $allBanks = $bankController->getAllBanks();
+            $bankData = [];
+            foreach ($allBanks as $bank) {
+                $bankData[$bank['bank_id']] = $bank;
             }
 
             include 'views/dashboard/index.php';
