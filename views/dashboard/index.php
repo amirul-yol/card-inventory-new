@@ -1304,4 +1304,9 @@ include __DIR__ . '/../includes/header.php';
     </div>
 </div>
 
+<?php
+// Include dashboard scripts only on the dashboard page
+include __DIR__ . '/scripts.php';
+?>
+
 <?php include __DIR__ . '/../includes/footer.php'; ?>
