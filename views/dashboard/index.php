@@ -252,235 +252,60 @@ include __DIR__ . '/../includes/header.php';
 <div id="reportDetailsModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
-            <h2 id="modalReportTitle">Report Details</h2>
+            <h2>
+                <i class="fas fa-file-alt"></i>
+                Report Details
+            </h2>
             <span class="close-modal">&times;</span>
         </div>
         <div class="modal-body">
-            <!-- Report overview tab (initially visible) -->
-            <div id="reportOverviewContainer" class="modal-view">
-                <div class="report-overview-header">
-                    <div class="report-bank-info">
-                        <img src="uploads/logos/default_bank.png" alt="Bank Logo" class="bank-logo-lg">
-                        <div class="bank-info-text">
-                            <h3 id="reportBankName">Demo Bank</h3>
-                            <p>Report ID: <span id="reportId">#12345</span></p>
-                        </div>
-                    </div>
-                    <div class="report-status-badge" id="reportStatusBadge">
-                        Pending
+            <div class="report-overview-header">
+                <div class="report-bank-info">
+                    <img src="uploads/logos/default_bank.png" alt="Bank Logo" class="bank-logo-lg">
+                    <div class="bank-info-text">
+                        <h3 id="reportBankName"></h3>
+                        <p>Report ID: <span id="reportId"></span></p>
                     </div>
                 </div>
-                
-                <div class="report-details-grid">
-                    <div class="report-detail-item">
-                        <div class="detail-label">Date</div>
-                        <div class="detail-value" id="reportDate">2023-05-15</div>
-                    </div>
-                    <div class="report-detail-item">
-                        <div class="detail-label">Created By</div>
-                        <div class="detail-value" id="reportCreator">John Doe</div>
-                    </div>
-                    <div class="report-detail-item">
-                        <div class="detail-label">Verified By</div>
-                        <div class="detail-value" id="reportVerifier">Not verified yet</div>
-                    </div>
+                <div id="reportStatusBadge" class="report-status-badge"></div>
+            </div>
+            
+            <div class="report-details-grid">
+                <div class="report-detail-item">
+                    <div class="detail-label">Date</div>
+                    <div class="detail-value" id="reportDate"></div>
                 </div>
-                
-                <div class="report-content">
-                    <h3>Withdrawn Cards</h3>
-                    <table class="report-cards-table">
-                        <thead>
-                            <tr>
-                                <th>Card Name</th>
-                                <th>Quantity</th>
-                                <th>Remarks</th>
-                                <th>Rejected</th>
-                            </tr>
-                        </thead>
-                        <tbody id="reportCardsTableBody">
-                            <!-- Sample data, will be replaced dynamically -->
-                            <tr>
-                                <td>Visa Classic</td>
-                                <td>100</td>
-                                <td>Normal Withdraw</td>
-                                <td>0</td>
-                            </tr>
-                            <tr>
-                                <td>Mastercard Gold</td>
-                                <td>50</td>
-                                <td>Production</td>
-                                <td>5</td>
-                            </tr>
-                            <tr>
-                                <td>American Express Platinum</td>
-                                <td>25</td>
-                                <td>Normal Withdraw</td>
-                                <td>0</td>
-                            </tr>
-                            <tr>
-                                <td>Discover Cashback</td>
-                                <td>75</td>
-                                <td>Production</td>
-                                <td>10</td>
-                            </tr>
-                            <tr>
-                                <td>Visa Signature</td>
-                                <td>60</td>
-                                <td>Normal Withdraw</td>
-                                <td>0</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <div class="report-detail-item">
+                    <div class="detail-label">Created By</div>
+                    <div class="detail-value" id="reportCreator"></div>
                 </div>
-                
-                <div class="report-actions" id="reportActionButtons">
-                    <button id="generateReportBtn" class="btn-action">
-                        <i class="fas fa-file-pdf"></i> Generate PDF
-                    </button>
-                    <button id="switchToVerifyViewBtn" class="btn-action btn-verify">
-                        <i class="fas fa-check-circle"></i> Verify Report
-                    </button>
+                <div class="report-detail-item">
+                    <div class="detail-label">Verified By</div>
+                    <div class="detail-value" id="reportVerifier"></div>
                 </div>
             </div>
             
-            <!-- Report verification view (initially hidden) -->
-            <div id="reportVerificationContainer" class="modal-view" style="display: none;">
-                <div class="verification-header">
-                    <button id="backToReportOverviewBtn" class="back-button">
-                        <i class="fas fa-arrow-left"></i> Back to overview
-                    </button>
-                    <h3>Verify Withdrawal Report</h3>
-                </div>
-                
-                <form id="verifyReportForm" class="verify-form">
-                    <input type="hidden" id="verify-report-id" name="report_id" value="">
-                    <input type="hidden" id="verify-bank-id" name="bank_id" value="">
-                    
-                    <div class="alert alert-info">
-                        Please review the withdrawn cards and mark any rejected cards before verifying.
-                    </div>
-                    
-                    <table class="verify-cards-table">
-                        <thead>
-                            <tr>
-                                <th>Card Name</th>
-                                <th>Quantity</th>
-                                <th>Remarks</th>
-                                <th>Reject Quantity</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="verifyCardsTableBody">
-                            <!-- Sample data, will be replaced dynamically -->
-                            <tr data-transaction-id="1">
-                                <td>Visa Classic</td>
-                                <td>100</td>
-                                <td>Normal Withdraw</td>
-                                <td>
-                                    <span class="rejected-amount">0</span>
-                                </td>
-                                <td>
-                                    <button type="button" class="btn-reject" data-transaction-id="1">
-                                        Reject
-                                    </button>
-                                </td>
-                            </tr>
-                            <tr data-transaction-id="2">
-                                <td>Mastercard Gold</td>
-                                <td>50</td>
-                                <td>Production</td>
-                                <td>
-                                    <span class="rejected-amount">0</span>
-                                </td>
-                                <td>
-                                    <button type="button" class="btn-reject" data-transaction-id="2">
-                                        Reject
-                                    </button>
-                                </td>
-                            </tr>
-                            <tr data-transaction-id="3">
-                                <td>American Express Platinum</td>
-                                <td>25</td>
-                                <td>Normal Withdraw</td>
-                                <td>
-                                    <span class="rejected-amount">0</span>
-                                </td>
-                                <td>
-                                    <button type="button" class="btn-reject" data-transaction-id="3">
-                                        Reject
-                                    </button>
-                                </td>
-                            </tr>
-                            <tr data-transaction-id="4">
-                                <td>Discover Cashback</td>
-                                <td>75</td>
-                                <td>Production</td>
-                                <td>
-                                    <span class="rejected-amount">0</span>
-                                </td>
-                                <td>
-                                    <button type="button" class="btn-reject" data-transaction-id="4">
-                                        Reject
-                                    </button>
-                                </td>
-                            </tr>
-                            <tr data-transaction-id="5">
-                                <td>Visa Signature</td>
-                                <td>60</td>
-                                <td>Normal Withdraw</td>
-                                <td>
-                                    <span class="rejected-amount">0</span>
-                                </td>
-                                <td>
-                                    <button type="button" class="btn-reject" data-transaction-id="5">
-                                        Reject
-                                    </button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    
-                    <div class="form-actions">
-                        <button type="button" id="cancelVerifyBtn" class="btn-secondary">Cancel</button>
-                        <button type="submit" id="submitVerifyBtn" class="btn-primary">Verify Report</button>
-                    </div>
-                </form>
+            <div class="report-content">
+                <h3>Withdrawn Cards</h3>
+                <table class="report-cards-table">
+                    <thead>
+                        <tr>
+                            <th>Card Name</th>
+                            <th>Quantity</th>
+                            <th>Remarks</th>
+                            <th>Rejected</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reportCardsTableBody">
+                        <!-- Data will be loaded dynamically -->
+                    </tbody>
+                </table>
             </div>
             
-            <!-- Reject card form (initially hidden) -->
-            <div id="rejectCardContainer" class="modal-view" style="display: none;">
-                <div class="reject-header">
-                    <button id="backToVerificationBtn" class="back-button">
-                        <i class="fas fa-arrow-left"></i> Back to verification
-                    </button>
-                    <h3>Reject Card</h3>
-                </div>
-                
-                <form id="rejectCardForm" class="reject-form">
-                    <input type="hidden" id="reject-transaction-id" name="transaction_id" value="">
-                    <input type="hidden" id="reject-report-id" name="report_id" value="">
-                    <input type="hidden" id="reject-bank-id" name="bank_id" value="">
-                    
-                    <div class="form-group">
-                        <label for="reject-card-name">Card:</label>
-                        <input type="text" id="reject-card-name" readonly class="form-control">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="reject-quantity">Withdrawn Quantity:</label>
-                        <input type="number" id="reject-original-quantity" readonly class="form-control">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="reject-quantity">Reject Quantity:</label>
-                        <input type="number" id="reject-quantity" name="quantity" min="1" required class="form-control">
-                    </div>
-                    
-                    <div class="form-actions">
-                        <button type="button" id="cancelRejectBtn" class="btn-secondary">Cancel</button>
-                        <button type="submit" class="btn-primary">Reject Cards</button>
-                    </div>
-                </form>
+            <div class="report-actions">
+                <a href="#" id="generatePdfBtn" class="btn-action">
+                    <i class="fas fa-file-pdf"></i> Generate PDF
+                </a>
             </div>
         </div>
     </div>

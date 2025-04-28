@@ -6,9 +6,13 @@ require_once 'controllers/AuthController.php';
 
 class ReportController {
     private $authController;
+    private $db;
     
     public function __construct() {
         $this->authController = new AuthController();
+        require_once 'config/Database.php';
+        $database = new Database();
+        $this->db = $database->getConnection();
     }
     
     public function index() {
@@ -521,6 +525,62 @@ class ReportController {
         }
 
         include 'views/report/reject_card.php';
+    }
+
+    /**
+     * Get detailed report information for the modal display
+     * @param int $reportId
+     * @return array|null
+     */
+    public function getReportDetails($reportId) {
+        // Sanitize input
+        $reportId = intval($reportId);
+        
+        // Get report basic information
+        $query = "SELECT r.id, r.report_date, r.status, r.bank_id,
+                        b.name as bank_name, b.logo_url as bank_logo,
+                        creator.name as created_by,
+                        verifier.name as verified_by
+                 FROM reports r
+                 LEFT JOIN banks b ON r.bank_id = b.id
+                 LEFT JOIN transactions t ON r.id = t.report_id
+                 LEFT JOIN users creator ON t.created_by = creator.id
+                 LEFT JOIN users verifier ON t.verified_by = verifier.id
+                 WHERE r.id = ?
+                 GROUP BY r.id";
+        
+        $stmt = $this->db->prepare($query);
+        $stmt->bind_param("i", $reportId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $reportData = $result->fetch_assoc();
+        
+        if (!$reportData) {
+            return null;
+        }
+
+        // Get report transactions/cards details
+        $query = "SELECT c.name as card_name, 
+                        t.quantity,
+                        t.remarks,
+                        COALESCE(r.quantity, 0) as rejected_quantity
+                 FROM transactions t
+                 LEFT JOIN cards c ON t.card_id = c.id
+                 LEFT JOIN rejections r ON t.id = r.transaction_id
+                 WHERE t.report_id = ?
+                 ORDER BY c.name";
+        
+        $stmt = $this->db->prepare($query);
+        $stmt->bind_param("i", $reportId);
+        $stmt->execute();
+        $cardsResult = $stmt->get_result();
+        $reportData['cards'] = [];
+        
+        while ($card = $cardsResult->fetch_assoc()) {
+            $reportData['cards'][] = $card;
+        }
+
+        return $reportData;
     }
 }
 ?>
