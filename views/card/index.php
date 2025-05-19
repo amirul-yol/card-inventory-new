@@ -57,14 +57,14 @@ include 'views/includes/header.php';
 
 <div class="content">
     <h1>Card Management 
-        <?php if ($isLO): ?>
+        <!-- <?php if ($isLO): ?>
             <a href="index.php?path=card/create" class="btn btn-primary add-card-btn">Add Card</a>
         <?php else: ?>
             <div class="tooltip">
                 <a class="btn btn-primary add-card-btn disabled">Add Card</a>
                 <span class="tooltip-text">Only Logistics Officers can add cards</span>
             </div>
-        <?php endif; ?>
+        <?php endif; ?> -->
     </h1>
     <div class="bank-list">
         <?php foreach ($banks as $currentBankId => $bank): ?>
