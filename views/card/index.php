@@ -85,7 +85,7 @@ include 'views/includes/header.php';
                         <thead>
                             <tr>
                                 <th>Card Name</th>
-                                <th>Association</th>
+                                <th>Payment Scheme</th>
                                 <th>Chip Type</th>
                                 <th>Type</th>
                                 <th>Quantity</th>
@@ -99,7 +99,7 @@ include 'views/includes/header.php';
                                     <td><?= $card['association'] ?></td>
                                     <td><?= $card['chip_type'] ?></td>
                                     <td><?= $card['card_type'] ?></td>
-                                    <td><?= $card['card_quantity'] ?></td>
+                                    <td><?= number_format($card['card_quantity'], 0, '.', ',') ?></td>
                                     <td><?= $card['expired_at'] ?></td>
                                     <td>
                                         <a href="index.php?path=card/details&id=<?= $card['card_id']; ?>" class="btn-icon">
