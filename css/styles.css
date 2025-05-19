@@ -149,9 +149,12 @@ footer {
 /* Dashboard grid container */
 .dashboard-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Flexible columns */
+    grid-template-columns: repeat(2, 1fr); /* Always 2 columns for 2x2 grid */
     gap: 20px; /* Space between boxes */
     margin-top: 20px; /* Space below the heading */
+    max-width: 1200px; /* Maximum width to prevent boxes from becoming too wide */
+    margin-left: auto;
+    margin-right: auto;
 }
 
 /* Individual dashboard box */

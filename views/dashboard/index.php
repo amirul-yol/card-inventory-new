@@ -13,24 +13,47 @@ include __DIR__ . '/../includes/header.php';
         <h1>Dashboard</h1>
         <div class="stats">
         <div class="dashboard-grid">
-        <div class="dashboard-box <?= $isBank ? 'clickable' : ''; ?>" <?= $isBank ? 'onclick="window.location.href=\'index.php?path=report/bankReports&bank_id=' . $bankId . '\'"' : ''; ?>>
-            <h2>Total Reports: </h2>
-            <p> <?php echo $data['totalReports']; ?></p>
+            <?php if ($isBank): ?>
+                <!-- Reports Box -->
+                <div class="dashboard-box clickable" onclick="window.location.href='index.php?path=report/bankReports&bank_id=<?= $bankId ?>'">
+                    <h2>Total Reports</h2>
+                    <p><?php echo $data['totalReports']; ?></p>
+                </div>
+                <!-- Total Cards Box -->
+                <div class="dashboard-box clickable" onclick="window.location.href='index.php?path=card'">
+                    <h2>Total Cards</h2>
+                    <p><?php echo $data['totalCards']; ?></p>
+                </div>
+                <!-- Debit Cards Box -->
+                <div class="dashboard-box clickable" onclick="window.location.href='index.php?path=card'">
+                    <h2>Debit Cards</h2>
+                    <p><?php echo $data['totalDebitCards']; ?></p>
+                </div>
+                <!-- Credit Cards Box -->
+                <div class="dashboard-box clickable" onclick="window.location.href='index.php?path=card'">
+                    <h2>Credit Cards</h2>
+                    <p><?php echo $data['totalCreditCards']; ?></p>
+                </div>
+            <?php else: ?>
+                <!-- Admin view boxes -->
+                <div class="dashboard-box">
+                    <h2>Total Reports</h2>
+                    <p><?php echo $data['totalReports']; ?></p>
+                </div>
+                <div class="dashboard-box">
+                    <h2>Total Cards</h2>
+                    <p><?php echo $data['totalCards']; ?></p>
+                </div>
+                <div class="dashboard-box">
+                    <h2>Total Banks</h2>
+                    <p><?php echo $data['totalBanks']; ?></p>
+                </div>
+                <div class="dashboard-box">
+                    <h2>Total Users</h2>
+                    <p><?php echo $data['totalUsers']; ?></p>
+                </div>
+            <?php endif; ?>
         </div>
-        <div class="dashboard-box <?= $isBank ? 'clickable' : ''; ?>" <?= $isBank ? 'onclick="window.location.href=\'index.php?path=card\'"' : ''; ?>>
-            <h2>Total Cards</h2>
-            <p><?php echo $data['totalCards']; ?></p>
-        </div>
-        <?php if (!$isBank): ?>
-        <div class="dashboard-box">
-            <h2>Total Banks</h2>
-            <p><?php echo $data['totalBanks']; ?></p>
-        </div>
-        <div class="dashboard-box">
-            <h2>Total Users</h2>
-            <p><?php echo $data['totalUsers']; ?></p>
-        </div>
-        <?php endif; ?>
     </main>
 </div>
 

@@ -77,4 +77,30 @@ class DashboardModel {
         }
         return 0;
     }
+
+    public function getTotalDebitCardsByBank($bankId) {
+        $sql = "SELECT COUNT(*) as total FROM cards WHERE bank_id = ? AND type = 'DEBIT CARD'";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("i", $bankId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if ($result) {
+            $row = $result->fetch_assoc();
+            return $row['total'];
+        }
+        return 0;
+    }
+
+    public function getTotalCreditCardsByBank($bankId) {
+        $sql = "SELECT COUNT(*) as total FROM cards WHERE bank_id = ? AND type = 'CREDIT CARD'";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bind_param("i", $bankId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if ($result) {
+            $row = $result->fetch_assoc();
+            return $row['total'];
+        }
+        return 0;
+    }
 }
