@@ -28,6 +28,7 @@ include 'views/includes/sidebar.php'; ?>
             <?php endforeach; ?>
         </tbody>
     </table>
+    <a href="index.php?path=card" class="btn btn-primary">Back to Card List</a>
 </div>
 
 <?php include 'views/includes/footer.php'; ?>
