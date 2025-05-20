@@ -10,6 +10,63 @@ include 'views/includes/header.php';
 <?php include 'views/includes/sidebar.php'; ?>
 
 <style>
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+    
+    .filter-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: #e9f7fe;
+        padding: 8px 15px;
+        border-radius: 4px;
+        border-left: 4px solid #2196F3;
+    }
+    
+    .filter-options {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .filter-options span {
+        color: #555;
+        font-weight: 500;
+    }
+    
+    .btn-outline {
+        background: transparent;
+        border: 1px solid #2196F3;
+        color: #2196F3;
+        padding: 5px 12px;
+        border-radius: 4px;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+    
+    .btn-outline:hover {
+        background: #e9f7fe;
+    }
+    
+    .clear-filter {
+        color: #f44336;
+        text-decoration: none;
+        font-weight: bold;
+        font-size: 1.1em;
+        line-height: 1;
+    }
+    
+    .clear-filter:hover {
+        text-decoration: none;
+        color: #d32f2f;
+    }
+    
     .add-card-btn.disabled {
         opacity: 0.6;
         cursor: not-allowed;
@@ -56,16 +113,21 @@ include 'views/includes/header.php';
 </style>
 
 <div class="content">
-    <h1>Card Management 
-        <!-- <?php if ($isLO): ?>
-            <a href="index.php?path=card/create" class="btn btn-primary add-card-btn">Add Card</a>
-        <?php else: ?>
-            <div class="tooltip">
-                <a class="btn btn-primary add-card-btn disabled">Add Card</a>
-                <span class="tooltip-text">Only Logistics Officers can add cards</span>
+    <div class="card-header">
+        <h1>Card Management</h1>
+        <?php if (isset($this->activeFilter)): ?>
+            <div class="filter-info">
+                <span>Showing: <?= htmlspecialchars($this->activeFilter) ?></span>
+                <a href="index.php?path=card" class="clear-filter">× Clear filter</a>
             </div>
-        <?php endif; ?> -->
-    </h1>
+        <?php else: ?>
+            <div class="filter-options">
+                <span>Filter by type: </span>
+                <a href="index.php?path=card&type=CREDIT CARD" class="btn btn-outline">Credit Cards</a>
+                <a href="index.php?path=card&type=DEBIT CARD" class="btn btn-outline">Debit Cards</a>
+            </div>
+        <?php endif; ?>
+    </div>
     <div class="bank-list">
         <?php foreach ($banks as $currentBankId => $bank): ?>
             <!-- Bank Card -->

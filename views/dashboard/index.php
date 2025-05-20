@@ -25,12 +25,13 @@ include __DIR__ . '/../includes/header.php';
                     <p><?php echo $data['totalCards']; ?></p>
                 </div>
                 <!-- Debit Cards Box -->
-                <div class="dashboard-box clickable" onclick="window.location.href='index.php?path=card'">
+                <!-- Debit Cards Box -->
+                <div class="dashboard-box clickable" onclick="window.location.href='index.php?path=card&type=DEBIT CARD'">
                     <h2>Debit Cards</h2>
                     <p><?php echo $data['totalDebitCards']; ?></p>
                 </div>
                 <!-- Credit Cards Box -->
-                <div class="dashboard-box clickable" onclick="window.location.href='index.php?path=card'">
+                <div class="dashboard-box clickable" onclick="window.location.href='index.php?path=card&type=CREDIT CARD'">
                     <h2>Credit Cards</h2>
                     <p><?php echo $data['totalCreditCards']; ?></p>
                 </div>

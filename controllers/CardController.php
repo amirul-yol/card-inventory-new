@@ -11,7 +11,18 @@ class CardController {
     
     public function index() {
         $model = new CardModel();
-        $allBanks = $model->getBanksWithCards();
+        
+        // Get card type filter if set
+        $cardType = isset($_GET['type']) ? strtoupper(trim($_GET['type'])) : null;
+        
+        // If card type is 'CREDIT CARD' or 'DEBIT CARD', filter by that type
+        if (in_array($cardType, ['CREDIT CARD', 'DEBIT CARD'])) {
+            $allBanks = $model->getBanksWithCards($cardType);
+            $activeFilter = $cardType;
+        } else {
+            $allBanks = $model->getBanksWithCards();
+            $activeFilter = null;
+        }
         
         // If user is a Bank user, filter to show only their bank
         if ($this->authController->isBank() && isset($_SESSION['bank_id'])) {
@@ -26,6 +37,9 @@ class CardController {
             // For Admin, PO, LO users, show all banks
             $banks = $allBanks;
         }
+        
+        // Pass the active filter to the view
+        $this->activeFilter = $activeFilter;
         
         include 'views/card/index.php';
     }

@@ -8,7 +8,7 @@ class CardModel {
         $this->db = Database::getInstance()->getConnection();
     }
 
-    public function getBanksWithCards() {
+    public function getBanksWithCards($cardType = null) {
         $query = "
             SELECT 
                 b.id AS bank_id, 
@@ -23,9 +23,19 @@ class CardModel {
                 c.quantity AS card_quantity 
             FROM banks b
             LEFT JOIN cards c ON b.id = c.bank_id
-            ORDER BY b.id, c.id;
         ";
-        $result = $this->db->query($query);
+        
+        // Add WHERE clause if card type is specified
+        if ($cardType) {
+            $query .= " WHERE c.type = ?";
+            $stmt = $this->db->prepare($query);
+            $stmt->bind_param('s', $cardType);
+            $stmt->execute();
+            $result = $stmt->get_result();
+        } else {
+            $query .= " ORDER BY b.id, c.id";
+            $result = $this->db->query($query);
+        }
 
         $data = [];
         while ($row = $result->fetch_assoc()) {
