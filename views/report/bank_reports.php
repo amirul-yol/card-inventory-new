@@ -88,7 +88,7 @@ foreach ($reports as $report) {
     <h2>Reports for <?= htmlspecialchars($bank['name']); ?></h2>
 
     <!-- Withdraw Button -->
-    <!-- <div class="action-buttons">
+    <div class="action-buttons">
         <?php if ($isLO && !$reportExistsForToday): ?>
             <a href="index.php?path=report/withdrawCard&bank_id=<?= $bank['bank_id']; ?>" class="btn withdraw-btn">Withdraw Card</a>
         <?php else: ?>
@@ -103,7 +103,7 @@ foreach ($reports as $report) {
                 </span>
             </div>
         <?php endif; ?>
-    </div> -->
+    </div>
 
     <!-- Existing Reports Table -->
     <br />
