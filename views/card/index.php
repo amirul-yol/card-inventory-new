@@ -122,7 +122,9 @@ include 'views/includes/header.php';
             </div>
         <?php else: ?>
             <div class="filter-options">
-                <a href="index.php?path=card/create" class="btn btn-primary add-card-btn">Add Card</a>                
+                <?php if (!$authController->isBank()): ?>
+                    <a href="index.php?path=card/create" class="btn btn-primary add-card-btn">Add Card</a>                
+                <?php endif; ?>
                 <span>Filter by type: </span>
                 <a href="index.php?path=card&type=CREDIT CARD" class="btn btn-outline">Credit Cards</a>
                 <a href="index.php?path=card&type=DEBIT CARD" class="btn btn-outline">Debit Cards</a>
