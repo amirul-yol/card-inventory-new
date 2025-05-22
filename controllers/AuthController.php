@@ -12,7 +12,7 @@ class AuthController {
     public function showLoginForm() {
         // Check if user is already logged in
         if ($this->isLoggedIn()) {
-            header('Location: index.php?path=dashboard');
+            header('Location: index.php?path=dashboardNew');
             exit;
         }
         
@@ -56,7 +56,7 @@ class AuthController {
             error_log("User {$user['id']} ({$user['email']}) logged in successfully");
             
             // Redirect to dashboard
-            header('Location: index.php?path=dashboard');
+            header('Location: index.php?path=dashboardNew');
             exit;
         } else {
             // Log failed login attempt

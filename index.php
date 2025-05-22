@@ -42,6 +42,11 @@ switch ($path) {
         $controller->index();
         break;
 
+    // New redesigned dashboard route
+    case 'dashboardNew':
+        include 'views/dashboard/dashboardNew.php';
+        break;
+
     case 'card':
         $controller = new CardController();
         $controller->index();

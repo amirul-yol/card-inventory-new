@@ -1,0 +1,96 @@
+/* modern-styles.css: Modern minimalist theme */
+:root {
+  --color-bg: #FFFFFF;
+  --color-bg-alt: #F5F5F5;
+  --color-text: #1A1A1A;
+  --color-text-inverse: #FFFFFF;
+  --color-accent: #14B8A6;
+  --color-accent-alt: #3B82F6;
+  --font-family-base: 'Helvetica Neue', Arial, sans-serif;
+  --font-size-base: 1rem;
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 3rem;
+}
+
+/* Base */
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--color-bg-alt);
+  color: var(--color-text);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-base);
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  margin-bottom: var(--spacing-md);
+}
+
+/* Links */
+a {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+a:hover, a:focus {
+  color: var(--color-accent-alt);
+  text-decoration: underline;
+}
+
+/* Navbar */
+.navbar {
+  background-color: var(--color-bg);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+.navbar .navbar-brand,
+.navbar .nav-link,
+.navbar-text {
+  color: var(--color-text);
+}
+.navbar .nav-link.active {
+  color: var(--color-accent);
+}
+
+/* Buttons */
+.btn-outline-danger {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+.btn-outline-danger:hover, .btn-outline-danger:focus {
+  background-color: var(--color-accent);
+  color: var(--color-text-inverse);
+}
+
+/* Content spacing */
+.container, .container-fluid {
+  padding-top: var(--spacing-lg);
+  padding-bottom: var(--spacing-lg);
+}
+
+/* Utility classes */
+.text-accent { color: var(--color-accent) !important; }
+.bg-accent { background-color: var(--color-accent) !important; color: var(--color-text-inverse) !important; }
+.mt-sm { margin-top: var(--spacing-sm) !important; }
+.mt-md { margin-top: var(--spacing-md) !important; }
+.mb-md { margin-bottom: var(--spacing-md) !important; }
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #1A1A1A;
+    --color-bg-alt: #111111;
+    --color-text: #FFFFFF;
+    --color-text-inverse: #F5F5F5;
+    --color-accent: #3B82F6;
+  }
+  body { background-color: var(--color-bg-alt); color: var(--color-text); }
+  .navbar { background-color: var(--color-bg); }
+  .navbar .navbar-brand, .navbar .nav-link, .navbar-text { color: var(--color-text-inverse); }
+  .navbar .nav-link.active { color: var(--color-accent); }
+  .btn-outline-danger { border-color: var(--color-accent); color: var(--color-accent); }
+  .btn-outline-danger:hover { background-color: var(--color-accent); color: var(--color-text-inverse); }
+}
