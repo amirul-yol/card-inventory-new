@@ -12,21 +12,24 @@ $isBank = $authController->isBank();
   <title>Card Inventory</title>
   <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- Custom Modern Styles -->
   <link rel="stylesheet" href="css/modern-styles.css">
+  <style>
+    .navbar .navbar-brand, .navbar .nav-link:not(.active), .navbar-text {
+      color: #1A1A1A !important;
+    }
+  </style>
 </head>
 <body>
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
   <div class="container-fluid">
-    <a class="navbar-brand" href="index.php?path=dashboard">Card Inventory</a>
+    <a class="navbar-brand d-flex align-items-center" href="index.php?path=dashboard">
+      <img src="public/logo.png" alt="Logo" height="30" class="me-2">
+    </a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-        <li class="nav-item">
-          <a class="nav-link <?= $path === 'dashboard' ? 'active' : '' ?>" href="index.php?path=dashboard">Dashboard</a>
-        </li>
         <li class="nav-item">
           <a class="nav-link <?= $path === 'card' ? 'active' : '' ?>" href="index.php?path=card">Card</a>
         </li>
@@ -42,19 +45,22 @@ $isBank = $authController->isBank();
         <li class="nav-item">
           <a class="nav-link <?= $path === 'user' ? 'active' : '' ?>" href="index.php?path=user">User</a>
         </li>
-        <li class="nav-item">
-          <a class="nav-link <?= $path === 'role' ? 'active' : '' ?>" href="index.php?path=role">Role</a>
-        </li>
         <?php endif; ?>
-        <li class="nav-item">
-          <a class="nav-link <?= $path === 'user_profile' ? 'active' : '' ?>" href="index.php?path=user_profile">User Profile</a>
-        </li>
       </ul>
-      <div class="d-flex align-items-center">
-        <?php if (isset($_SESSION['user_name'])): ?>
-        <span class="navbar-text me-3">Logged in as: <?= htmlspecialchars($_SESSION['user_name']) ?></span>
-        <a class="btn btn-outline-danger" href="index.php?path=auth/logout">Logout</a>
-        <?php endif; ?>
+      <div class="d-flex align-items-center ms-auto">
+        <span id="currentTime" class="navbar-text me-3"></span>
+        <div class="dropdown">
+          <?php if (isset($_SESSION['user_name'])): ?>
+          <a class="nav-link dropdown-toggle text-dark" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <?= htmlspecialchars($_SESSION['user_name']) ?>
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+            <li><a class="dropdown-item" href="index.php?path=user_profile">My Profile</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="index.php?path=auth/logout">Logout</a></li>
+          </ul>
+          <?php endif; ?>
+        </div>
       </div>
     </div>
   </div>
@@ -64,3 +70,13 @@ $isBank = $authController->isBank();
 
 <!-- Bootstrap JS Bundle -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  function updateTime() {
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('en-GB');
+    const timeStr = now.toLocaleTimeString('en-GB');
+    document.getElementById('currentTime').textContent = `${dateStr} ${timeStr}`;
+  }
+  updateTime();
+  setInterval(updateTime, 1000);
+</script>
