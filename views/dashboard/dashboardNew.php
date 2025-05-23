@@ -84,13 +84,56 @@ include __DIR__ . '/../includes/headerNew.php';
       $filterGroups = [];
       if (isset($data['cardTypeFilterOptions']) && !empty($data['cardTypeFilterOptions'])) {
           $filterGroups[] = [
-              'label'         => 'Filter by Card Type:', // This will be visually hidden by default in the component
+              'label'         => 'Filter by Card Type:',
               'name'          => 'card_type',
               'options'       => $data['cardTypeFilterOptions'],
               'selectedValue' => $data['selectedCardType'] ?? null,
               'allLabel'      => 'All Card Types'
           ];
       }
+
+      if (isset($data['chipTypeFilterOptions']) && !empty($data['chipTypeFilterOptions'])) {
+          $filterGroups[] = [
+              'label'         => 'Filter by Chip Type:',
+              'name'          => 'chip_type',
+              'options'       => $data['chipTypeFilterOptions'],
+              'selectedValue' => $data['selectedChipType'] ?? null,
+              'allLabel'      => 'All Chip Types'
+          ];
+      }
+
+      if (isset($data['associationFilterOptions']) && !empty($data['associationFilterOptions'])) {
+          $filterGroups[] = [
+              'label'         => 'Filter by Payment Scheme:',
+              'name'          => 'association',
+              'options'       => $data['associationFilterOptions'],
+              'selectedValue' => $data['selectedAssociation'] ?? null,
+              'allLabel'      => 'All Schemes'
+          ];
+      }
+
+      // Add a group for sorting by Expiry Date
+      // Note: 'options' for sort is an associative array [value => display_text]
+      // The component needs to be slightly adjusted if it doesn't handle associative options for display vs value.
+      // For now, assuming simple string options or that the component handles it.
+      // Let's define explicit options for sorting.
+      $expirySortOptions = [
+          '' => 'Sort by Expiry (Default)', // Default/No sort specific to expiry
+          'ASC' => 'Oldest First',
+          'DESC' => 'Newest First'
+      ];
+      $filterGroups[] = [
+          'label'         => 'Sort by Expiry Date:',
+          'name'          => 'expiry_sort',
+          // Pass associative array for options if component supports it, otherwise map to simple array if needed.
+          // For simplicity, let's assume the component can take an array of values and display them, 
+          // or we can adjust the component. For now, we'll pass values and expect them to be used as display too.
+          // A better approach for the component would be to accept ['value' => 'Display Label'] pairs.
+          // Let's adapt the component to handle this by checking if options are associative.
+          'options'       => $expirySortOptions, // This will be an associative array
+          'selectedValue' => $data['selectedExpirySort'] ?? null,
+          'allLabel'      => 'Default Sort' // This might be confusing for a sort, let's make it specific
+      ];
 
       $formAction = 'index.php';
       $formMethod = 'GET';
@@ -101,6 +144,16 @@ include __DIR__ . '/../includes/headerNew.php';
       $activeFilterMessage = null;
       if (!empty($data['selectedCardType'])) {
         $activeFilterMessage = 'Filtered by Card Type: ' . htmlspecialchars($data['selectedCardType']);
+      }
+      if (!empty($data['selectedChipType'])) {
+        $activeFilterMessage .= ($activeFilterMessage ? '; ' : '') . 'Chip: ' . htmlspecialchars($data['selectedChipType']);
+      }
+      if (!empty($data['selectedAssociation'])) {
+        $activeFilterMessage .= ($activeFilterMessage ? '; ' : '') . 'Scheme: ' . htmlspecialchars($data['selectedAssociation']);
+      }
+      if (!empty($data['selectedExpirySort'])) {
+        $sortLabel = ($data['selectedExpirySort'] === 'ASC') ? 'Oldest First' : 'Newest First';
+        $activeFilterMessage .= ($activeFilterMessage ? '; ' : '') . 'Sort by Expiry: ' . $sortLabel;
       }
 
       // Include the filter controls component if there are any filter groups defined

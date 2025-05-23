@@ -64,12 +64,28 @@ class DashboardController {
 
                 // Get distinct card types for filter dropdown
                 $data['cardTypeFilterOptions'] = $cardModel->getDistinctCardTypesForBank($bankId);
+                // Get distinct chip types for filter dropdown
+                $data['chipTypeFilterOptions'] = $cardModel->getDistinctChipTypesForBank($bankId);
+                // Get distinct associations (payment schemes) for filter dropdown
+                $data['associationFilterOptions'] = $cardModel->getDistinctAssociationsForBank($bankId);
 
                 // Get selected card type from GET request
                 $selectedCardType = isset($_GET['card_type']) && !empty($_GET['card_type']) ? $_GET['card_type'] : null;
                 $data['selectedCardType'] = $selectedCardType;
 
-                $data['bankCardsDashboard'] = $cardModel->getCardsForBankDashboard($bankId, $selectedCardType);
+                // Get selected chip type from GET request
+                $selectedChipType = isset($_GET['chip_type']) && !empty($_GET['chip_type']) ? $_GET['chip_type'] : null;
+                $data['selectedChipType'] = $selectedChipType;
+
+                // Get selected association from GET request
+                $selectedAssociation = isset($_GET['association']) && !empty($_GET['association']) ? $_GET['association'] : null;
+                $data['selectedAssociation'] = $selectedAssociation;
+
+                // Get selected expiry date sort order from GET request
+                $selectedExpirySort = isset($_GET['expiry_sort']) && in_array(strtoupper($_GET['expiry_sort']), ['ASC', 'DESC']) ? strtoupper($_GET['expiry_sort']) : null;
+                $data['selectedExpirySort'] = $selectedExpirySort;
+
+                $data['bankCardsDashboard'] = $cardModel->getCardsForBankDashboard($bankId, $selectedCardType, $selectedChipType, $selectedAssociation, $selectedExpirySort);
             } else {
                 // For Admin or other non-bank users, show system-wide totals
                 $data = [

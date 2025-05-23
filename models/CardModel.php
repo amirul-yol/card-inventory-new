@@ -260,8 +260,52 @@ class CardModel {
         $stmt->close();
         return $types;
     }
+
+    public function getDistinctChipTypesForBank($bankId) {
+        $sql = "SELECT DISTINCT chip_type FROM cards WHERE bank_id = ? AND chip_type IS NOT NULL AND chip_type != '' ORDER BY chip_type ASC";
+        $stmt = $this->db->prepare($sql);
+        if (!$stmt) {
+            error_log('Prepare failed for getDistinctChipTypesForBank: (' . $this->db->errno . ') ' . $this->db->error);
+            return [];
+        }
+        $stmt->bind_param("i", $bankId);
+        if (!$stmt->execute()) {
+            error_log('Execute failed for getDistinctChipTypesForBank: (' . $stmt->errno . ') ' . $stmt->error);
+            $stmt->close();
+            return [];
+        }
+        $result = $stmt->get_result();
+        $chipTypes = [];
+        while ($row = $result->fetch_assoc()) {
+            $chipTypes[] = $row['chip_type'];
+        }
+        $stmt->close();
+        return $chipTypes;
+    }
+
+    public function getDistinctAssociationsForBank($bankId) {
+        $sql = "SELECT DISTINCT association FROM cards WHERE bank_id = ? AND association IS NOT NULL AND association != '' ORDER BY association ASC";
+        $stmt = $this->db->prepare($sql);
+        if (!$stmt) {
+            error_log('Prepare failed for getDistinctAssociationsForBank: (' . $this->db->errno . ') ' . $this->db->error);
+            return [];
+        }
+        $stmt->bind_param("i", $bankId);
+        if (!$stmt->execute()) {
+            error_log('Execute failed for getDistinctAssociationsForBank: (' . $stmt->errno . ') ' . $stmt->error);
+            $stmt->close();
+            return [];
+        }
+        $result = $stmt->get_result();
+        $associations = [];
+        while ($row = $result->fetch_assoc()) {
+            $associations[] = $row['association'];
+        }
+        $stmt->close();
+        return $associations;
+    }
     
-    public function getCardsForBankDashboard($bankId, $cardTypeFilter = null) {
+    public function getCardsForBankDashboard($bankId, $cardTypeFilter = null, $chipTypeFilter = null, $associationFilter = null, $expiryDateSort = null) {
         $sql = "
             SELECT 
                 c.id AS card_id, 
@@ -276,29 +320,52 @@ class CardModel {
         ";
 
         $params = ['i', $bankId];
+        $paramTypes = 'i';
 
         if (!empty($cardTypeFilter)) {
             $sql .= " AND c.type = ?";
-            $params[0] .= 's'; // Add 's' for string type
+            $paramTypes .= 's';
             $params[] = $cardTypeFilter;
         }
 
-        $sql .= " ORDER BY c.name ASC;";
+        if (!empty($chipTypeFilter)) {
+            $sql .= " AND c.chip_type = ?";
+            $paramTypes .= 's';
+            $params[] = $chipTypeFilter;
+        }
+
+        if (!empty($associationFilter)) {
+            $sql .= " AND c.association = ?";
+            $paramTypes .= 's';
+            $params[] = $associationFilter;
+        }
+
+        // Update parameter array for bind_param
+        $bindParams = [&$paramTypes];
+        for ($i = 1; $i < count($params); $i++) {
+            $bindParams[] = &$params[$i];
+        }
+
+        if (!empty($expiryDateSort) && in_array(strtoupper($expiryDateSort), ['ASC', 'DESC'])) {
+            $sql .= " ORDER BY c.expired_at " . strtoupper($expiryDateSort) . ", c.name ASC";
+        } else {
+            $sql .= " ORDER BY c.name ASC";
+        }
+        $sql .= ";"; // Ensure the query ends with a semicolon
     
         $stmt = $this->db->prepare($sql);
         if (!$stmt) {
-            // Handle prepare error, e.g., log it or throw an exception
-            error_log('Prepare failed: (' . $this->db->errno . ') ' . $this->db->error);
-            return []; // Return empty array or handle error as appropriate
+            error_log('Prepare failed for getCardsForBankDashboard: (' . $this->db->errno . ') ' . $this->db->error . ' SQL: ' . $sql);
+            return [];
         }
         
-        // Dynamically bind parameters
-        // array_values to re-index array for splat operator if needed, though direct pass should work
-        $stmt->bind_param(...$params);
+        // Bind parameters only if there are any beyond the initial bankId
+        if (count($bindParams) > 1) {
+            call_user_func_array([$stmt, 'bind_param'], $bindParams);
+        }
 
         if (!$stmt->execute()) {
-            // Handle execute error
-            error_log('Execute failed: (' . $stmt->errno . ') ' . $stmt->error);
+            error_log('Execute failed for getCardsForBankDashboard: (' . $stmt->errno . ') ' . $stmt->error);
             $stmt->close();
             return [];
         }

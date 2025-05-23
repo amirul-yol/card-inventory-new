@@ -8,7 +8,7 @@
  * @var array $filterGroups An array of filter groups. Each group is an associative array with:
  *      'label'         => (string) The label for the filter dropdown (e.g., 'Filter by Card Type:').
  *      'name'          => (string) The name attribute for the select element (e.g., 'card_type').
- *      'options'       => (array) An array of strings for the dropdown options.
+ *      'options'       => (array) An array of strings or associative array for the dropdown options.
  *      'selectedValue' => (string|null) The currently selected value for this filter, if any.
  *      'allLabel'      => (string) The label for the 'all' option (e.g., 'All Card Types').
  *
@@ -46,10 +46,16 @@ foreach ($filterGroups as $group) {
                 <label for="filter_<?= htmlspecialchars($group['name']) ?>_<?= $index ?>" class="form-label visually-hidden"><?= htmlspecialchars($group['label']) ?></label>
                 <select name="<?= htmlspecialchars($group['name']) ?>" id="filter_<?= htmlspecialchars($group['name']) ?>_<?= $index ?>" class="form-select form-select-sm" onchange="this.form.submit()">
                     <option value=""><?= htmlspecialchars($group['allLabel'] ?? 'All') ?></option>
-                    <?php foreach ($group['options'] as $option): ?>
-                        <option value="<?= htmlspecialchars($option) ?>"
-                            <?= (isset($group['selectedValue']) && $group['selectedValue'] === $option) ? 'selected' : '' ?>>
-                            <?= htmlspecialchars($option) ?>
+                    <?php foreach ($group['options'] as $value => $display): ?>
+                        <?php 
+                            // If options are not associative (simple array), $value is index, $display is the actual option value.
+                            // If associative, $value is the option value, $display is the text to show.
+                            $optionValue = is_int($value) ? $display : $value;
+                            $optionDisplay = $display;
+                        ?>
+                        <option value="<?= htmlspecialchars($optionValue) ?>"
+                            <?= (isset($group['selectedValue']) && (string)$group['selectedValue'] === (string)$optionValue) ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($optionDisplay) ?>
                         </option>
                     <?php endforeach; ?>
                 </select>
