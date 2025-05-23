@@ -67,16 +67,3 @@ $isBank = $authController->isBank();
 </nav>
 
 <!-- Page content starts here -->
-
-<!-- Bootstrap JS Bundle -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-  function updateTime() {
-    const now = new Date();
-    const dateStr = now.toLocaleDateString('en-GB');
-    const timeStr = now.toLocaleTimeString('en-GB');
-    document.getElementById('currentTime').textContent = `${dateStr} ${timeStr}`;
-  }
-  updateTime();
-  setInterval(updateTime, 1000);
-</script>
