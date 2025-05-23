@@ -42,7 +42,7 @@
                   <i class="fa fa-search"></i>
                 </a>
                 <a href="index.php?path=card/viewTransactions&card_id=<?= $card['card_id']; ?>" class="btn btn-sm btn-outline-secondary" title="View Transactions">
-                  <i class="fa fa-file-text"></i>
+                  <i class="fa fa-file-invoice"></i>
                 </a>
               </td>
             </tr>
