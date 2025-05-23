@@ -78,6 +78,15 @@ include __DIR__ . '/../includes/headerNew.php';
     ?>
   </div>
 
+  <?php if ($isBank && isset($bankId)): ?>
+    <?php
+      // Use actual card data passed from DashboardController
+      // Default to an empty array if not set or empty to prevent errors in the component
+      $cardsData = isset($data['bankCardsDashboard']) && !empty($data['bankCardsDashboard']) ? $data['bankCardsDashboard'] : [];
+      include __DIR__ . '/../components/CardQuickInfoTable.php';
+    ?>
+  <?php endif; ?>
+
   <?php 
     // Show bank carousel for non-bank users if there's bank data from the controller
     // $banksForCarousel is passed from DashboardController

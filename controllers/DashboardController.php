@@ -2,6 +2,7 @@
 require_once 'db/database.php';
 include_once __DIR__ . '/../models/DashboardModel.php';
 require_once 'controllers/AuthController.php';
+require_once 'models/CardModel.php'; // Ensure CardModel is included
 
 class DashboardController {
     private $model;
@@ -58,6 +59,9 @@ class DashboardController {
                     'totalDebitCards' => $this->model->getTotalDebitCardsByBank($bankId),
                     'totalCreditCards' => $this->model->getTotalCreditCardsByBank($bankId),
                 ];
+                // Fetch cards for the bank user's dashboard quick info table
+                $cardModel = new CardModel(); // Instantiate CardModel
+                $data['bankCardsDashboard'] = $cardModel->getCardsForBankDashboard($bankId);
             } else {
                 // For Admin or other non-bank users, show system-wide totals
                 $data = [

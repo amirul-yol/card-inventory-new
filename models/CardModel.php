@@ -239,5 +239,41 @@ class CardModel {
         return $cards;
     }
     
+    public function getCardsForBankDashboard($bankId) {
+        $sql = "
+            SELECT 
+                c.id AS card_id, 
+                c.name AS card_name, 
+                c.association, 
+                c.chip_type, 
+                c.type AS card_type, 
+                c.quantity AS card_quantity, 
+                c.expired_at
+            FROM cards c
+            WHERE c.bank_id = ?
+            ORDER BY c.name ASC;  -- Optional: order by card name
+        ";
+    
+        $stmt = $this->db->prepare($sql);
+        if (!$stmt) {
+            // Handle prepare error, e.g., log it or throw an exception
+            error_log('Prepare failed: (' . $this->db->errno . ') ' . $this->db->error);
+            return []; // Return empty array or handle error as appropriate
+        }
+        
+        $stmt->bind_param("i", $bankId);
+        if (!$stmt->execute()) {
+            // Handle execute error
+            error_log('Execute failed: (' . $stmt->errno . ') ' . $stmt->error);
+            $stmt->close();
+            return [];
+        }
+    
+        $result = $stmt->get_result();
+        $cards = $result->fetch_all(MYSQLI_ASSOC);
+    
+        $stmt->close();
+        return $cards;
+    }
 }
 ?>
