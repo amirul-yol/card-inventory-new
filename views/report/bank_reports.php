@@ -114,7 +114,7 @@ foreach ($reports as $report) {
                 <tr>
                     <th>Date</th>
                     <th>Status</th>
-                    <!-- <th>Details</th> -->
+                    <th>Details</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -123,7 +123,7 @@ foreach ($reports as $report) {
                     <tr>
                         <td><?= htmlspecialchars($report['report_date'] ?? 'N/A'); ?></td>
                         <td><?= htmlspecialchars($report['status'] ?? 'N/A'); ?></td>
-                        <!-- <td><?= htmlspecialchars($report['details'] ?? 'No Details Available'); ?></td> -->
+                        <td><?= htmlspecialchars($report['details'] ?? 'No Details Available'); ?></td>
 
                         <td>
                             <?php if ($isPO): ?>
@@ -135,7 +135,7 @@ foreach ($reports as $report) {
                                     View
                                 </a>
                             <?php endif; ?>
-                            <!-- <a href="index.php?path=report/download&report_id=<?= $report['id']; ?>" class="btn btn-action">Generate Report</a> -->
+                            <a href="index.php?path=report/download&report_id=<?= $report['id']; ?>" class="btn btn-action">Generate Report</a>
                         </td>
                     </tr>
                 <?php endforeach; ?>

@@ -38,9 +38,9 @@
               <td class="text-end"><?= number_format($card['card_quantity']) ?></td>
               <td><?= htmlspecialchars(date('d M Y', strtotime($card['expired_at']))) ?></td>
               <td class="text-center">
-                <a href="index.php?path=card/details&id=<?= $card['card_id']; ?>" class="btn btn-sm btn-outline-primary me-1" title="View Details">
+                <!-- <a href="index.php?path=card/details&id=<?= $card['card_id']; ?>" class="btn btn-sm btn-outline-primary me-1" title="View Details">
                   <i class="fa fa-search"></i>
-                </a>
+                </a> -->
                 <a href="index.php?path=card/viewTransactions&card_id=<?= $card['card_id']; ?>" class="btn btn-sm btn-outline-secondary" title="View Transactions">
                   <i class="fa fa-file-invoice"></i>
                 </a>
