@@ -19,7 +19,8 @@
 body {
   margin: 0;
   padding: 0;
-  background-color: var(--color-bg-alt);
+  /* background-color: var(--color-bg-alt); */
+  background-color: var(--color-bg);
   color: var(--color-text);
   font-family: var(--font-family-base);
   font-size: var(--font-size-base);
@@ -77,20 +78,3 @@ a:hover, a:focus {
 .mt-sm { margin-top: var(--spacing-sm) !important; }
 .mt-md { margin-top: var(--spacing-md) !important; }
 .mb-md { margin-bottom: var(--spacing-md) !important; }
-
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-bg: #1A1A1A;
-    --color-bg-alt: #111111;
-    --color-text: #FFFFFF;
-    --color-text-inverse: #F5F5F5;
-    --color-accent: #3B82F6;
-  }
-  body { background-color: var(--color-bg-alt); color: var(--color-text); }
-  .navbar { background-color: var(--color-bg); }
-  .navbar .navbar-brand, .navbar .nav-link, .navbar-text { color: var(--color-text-inverse); }
-  .navbar .nav-link.active { color: var(--color-accent); }
-  .btn-outline-danger { border-color: var(--color-accent); color: var(--color-accent); }
-  .btn-outline-danger:hover { background-color: var(--color-accent); color: var(--color-text-inverse); }
-}
