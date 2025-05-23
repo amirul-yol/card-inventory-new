@@ -39,7 +39,7 @@ include 'views/includes/sidebar.php';
         <input type="hidden" name="bank_id" value="<?php echo htmlspecialchars($bankId); ?>">
         <input type="hidden" name="report_id" value="<?php echo htmlspecialchars($reportId); ?>">
 
-        <!-- <?php if ($isVerified): ?>
+        <?php if ($isVerified): ?>
             <div class="alert alert-info">
                 This report has already been verified and cannot be modified.
             </div>
@@ -47,7 +47,7 @@ include 'views/includes/sidebar.php';
             <div class="alert alert-info">
                 You can view this report, but only Production Officers can verify reports.
             </div>
-        <?php endif; ?> -->
+        <?php endif; ?>
 
         <table>
             <thead>
@@ -55,8 +55,8 @@ include 'views/includes/sidebar.php';
                     <th>Card Name</th>
                     <th>Quantity</th>
                     <th>Remarks</th>
-                    <!-- <th>Reject Quantity</th>
-                    <th>Action</th> -->
+                    <th>Reject Quantity</th>
+                    <th>Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -66,7 +66,7 @@ include 'views/includes/sidebar.php';
                             <td><?= htmlspecialchars($transaction['card_name'] ?? 'Unknown', ENT_QUOTES, 'UTF-8'); ?></td>
                             <td><?= htmlspecialchars($transaction['quantity']); ?></td>
                             <td><?= htmlspecialchars($transaction['remarks']); ?></td>
-                            <!-- <td>
+                            <td>
                                 <?php 
                                     $rejectedAmount = $reportModel->getRejectedAmount($transaction['id']);
                                     echo htmlspecialchars($rejectedAmount ?? '0');
@@ -80,7 +80,7 @@ include 'views/includes/sidebar.php';
                                 <?php else: ?>
                                     <button type="button" class="btn btn-danger" disabled>Reject</button>
                                 <?php endif; ?>
-                            </td> -->
+                            </td>
                         </tr>
                     <?php endforeach; ?>
                 <?php else: ?>
