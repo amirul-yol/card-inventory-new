@@ -18,7 +18,10 @@ include __DIR__ . '/../includes/headerNew.php';
                   'icon' => 'fas fa-file-alt',
                   'label' => 'Total Reports',
                   'value' => $data['totalReports'] ?? 0, // Use fetched data, default to 0 if not set
-                  'onclick' => "window.location.href='index.php?path=report/bankReports&bank_id=$bankId'"
+                  'htmlAttributes' => [
+                      'data-bs-toggle' => 'modal',
+                      'data-bs-target' => '#bankReportsModal'
+                  ]
               ],
               [
                   'icon' => 'fas fa-credit-card',
@@ -42,10 +45,15 @@ include __DIR__ . '/../includes/headerNew.php';
       } else { // Non-bank users (e.g., Admin)
           $infoCards = [
               [
+                  // TODO: For Admin/Non-Bank roles, this modal should first prompt for bank selection,
+                  // then display reports for the chosen bank. Currently shows generic mock data from BankReportsModal.php.
                   'icon' => 'fas fa-file-alt',
                   'label' => 'Total Reports',
                   'value' => $data['totalReports'] ?? 0,
-                  'onclick' => "window.location.href='index.php?path=report'" // Link to general reports page for admin
+                  'htmlAttributes' => [
+                      'data-bs-toggle' => 'modal',
+                      'data-bs-target' => '#bankReportsModal'
+                  ]
               ],
               [
                   'icon' => 'fas fa-credit-card',
@@ -72,7 +80,8 @@ include __DIR__ . '/../includes/headerNew.php';
         $iconClass = $c['icon'];
         $label = $c['label'];
         $value = $c['value'];
-        $onclick = $c['onclick'];
+        $onclick = $c['onclick'] ?? null; // Ensure $onclick is defined, default to null
+        $htmlAttributes = $c['htmlAttributes'] ?? []; // Pass htmlAttributes if they exist
         include __DIR__ . '/../components/InfoCard.php';
       }
     ?>
@@ -127,9 +136,7 @@ include __DIR__ . '/../includes/headerNew.php';
           'name'          => 'expiry_sort',
           // Pass associative array for options if component supports it, otherwise map to simple array if needed.
           // For simplicity, let's assume the component can take an array of values and display them, 
-          // or we can adjust the component. For now, we'll pass values and expect them to be used as display too.
-          // A better approach for the component would be to accept ['value' => 'Display Label'] pairs.
-          // Let's adapt the component to handle this by checking if options are associative.
+          // or we can adjust the component to handle this by checking if options are associative.
           'options'       => $expirySortOptions, // This will be an associative array
           'selectedValue' => $data['selectedExpirySort'] ?? null,
           'allLabel'      => 'Default Sort' // This might be confusing for a sort, let's make it specific
@@ -184,7 +191,13 @@ include __DIR__ . '/../includes/headerNew.php';
     </div>
   <?php endif; ?>
 
-</div> <!-- End of .container-fluid from headerNew.php or a main wrapper -->
+</div> <!-- End of .container -->
+
+<?php 
+  // Include the Bank Reports Modal component here, so it's available on the page
+  // It's used by both bank users and admin/other non-bank roles via their respective 'Total Reports' InfoCard.
+  include __DIR__ . '/../components/BankReportsModal.php';
+?>
 
 <?php 
   // Include the new footer
