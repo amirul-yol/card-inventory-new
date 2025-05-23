@@ -180,3 +180,30 @@ a:hover, a:focus {
 .app-footer .text-muted {
     color: var(--charcoal, #1A1A1A) !important; /* Charcoal text, ensure it overrides Bootstrap's default muted if necessary */
 }
+
+/* Table Styles */
+.table-hover > tbody > tr:hover > * {
+  background-color: var(--color-accent-alt);
+  color: var(--color-text-inverse);
+}
+
+/* Custom Scrollbar for Webkit browsers */
+::-webkit-scrollbar {
+  width: 8px; /* Width of the scrollbar */
+  height: 8px; /* Height of the scrollbar for horizontal scrollbars */
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg-alt); /* Background of the scrollbar track */
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--color-accent); /* Color of the scrollbar thumb */
+  border-radius: 10px;
+  border: 2px solid var(--color-bg-alt); /* Creates padding around thumb */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-accent-alt); /* Color of the thumb on hover */
+}
