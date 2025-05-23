@@ -44,7 +44,8 @@ switch ($path) {
 
     // New redesigned dashboard route
     case 'dashboardNew':
-        include 'views/dashboard/dashboardNew.php';
+        $controller = new DashboardController();
+        $controller->displayNewDashboard();
         break;
 
     case 'card':
