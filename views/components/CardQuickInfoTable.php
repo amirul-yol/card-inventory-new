@@ -23,7 +23,7 @@
           <th>Chip Type</th>
           <th>Type</th>
           <th class="text-end">Quantity</th> <!-- Right-align quantity -->
-          <th>Expiration Date</th>
+          <th>Expiry Date</th>
           <th class="text-center">Actions</th> <!-- Center-align actions -->
         </tr>
       </thead>
