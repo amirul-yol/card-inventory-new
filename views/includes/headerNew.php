@@ -13,15 +13,10 @@ $isBank = $authController->isBank();
   <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="css/modern-styles.css">
-  <style>
-    .navbar .navbar-brand, .navbar .nav-link:not(.active), .navbar-text {
-      color: #1A1A1A !important;
-    }
-  </style>
 </head>
 <body>
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
-  <div class="container-fluid">
+  <div class="container">
     <a class="navbar-brand d-flex align-items-center" href="index.php?path=dashboard">
       <img src="public/logo.png" alt="Logo" height="30" class="me-2">
     </a>

@@ -8,6 +8,8 @@
   --color-accent-alt: #3B82F6;
   --font-family-base: 'Helvetica Neue', Arial, sans-serif;
   --font-size-base: 1rem;
+  --spacing-xxxs: 0.0625rem;
+  --spacing-xxs: 0.125rem;
   --spacing-xs: 0.25rem;
   --spacing-sm: 0.5rem;
   --spacing-md: 1rem;
@@ -46,14 +48,44 @@ a:hover, a:focus {
 .navbar {
   background-color: var(--color-bg);
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  /* Make navbar more compact */
+  padding-top: var(--spacing-xxxs); /* Default was 0.5rem, now 0.25rem */
+  padding-bottom: var(--spacing-xxxs);
 }
 .navbar .navbar-brand,
-.navbar .nav-link,
+.navbar .nav-link:not(.active), /* Ensure non-active links use default text color */
 .navbar-text {
-  color: var(--color-text);
+  color: var(--color-text) !important; /* Original was #1A1A1A */
+}
+.navbar .nav-link {
+  /* Adjust padding for nav links for compactness */
+  padding-top: var(--spacing-sm); /* Default was 0.5rem */
+  padding-bottom: var(--spacing-sm);
 }
 .navbar .nav-link.active {
   color: var(--color-accent);
+  font-weight: 500; /* Slightly bolder active link */
+}
+
+/* Header User Dropdown Styling */
+.navbar .dropdown .nav-link.dropdown-toggle {
+  border: 1px solid #dee2e6; /* Subtle border */
+  padding: var(--spacing-sm) var(--spacing-md); /* y:0.5rem, x:1rem */
+  border-radius: 0.25rem; /* Slight rounding */
+  background-color: var(--color-bg); /* Match navbar background */
+  color: var(--color-text) !important; /* Ensure text color consistency */
+  transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
+  line-height: 1.5; /* Ensure text is vertically centered well with padding */
+}
+.navbar .dropdown .nav-link.dropdown-toggle:hover,
+.navbar .dropdown .nav-link.dropdown-toggle:focus {
+  background-color: var(--color-bg-alt); /* Light gray on hover/focus */
+  border-color: #ced4da; /* Slightly darker border on hover/focus */
+}
+.navbar .dropdown-menu {
+  border: 1px solid #dee2e6; /* Border for the dropdown menu itself */
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075); /* Subtle shadow */
+  margin-top: var(--spacing-xs) !important; /* Add a small gap between toggle and menu (0.25rem) */
 }
 
 /* Buttons */
@@ -75,6 +107,7 @@ a:hover, a:focus {
 /* Utility classes */
 .text-accent { color: var(--color-accent) !important; }
 .bg-accent { background-color: var(--color-accent) !important; color: var(--color-text-inverse) !important; }
+.mt-xs { margin-top: var(--spacing-xs) !important; }
 .mt-sm { margin-top: var(--spacing-sm) !important; }
 .mt-md { margin-top: var(--spacing-md) !important; }
 .mb-md { margin-bottom: var(--spacing-md) !important; }
