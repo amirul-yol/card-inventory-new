@@ -61,7 +61,15 @@ class DashboardController {
                 ];
                 // Fetch cards for the bank user's dashboard quick info table
                 $cardModel = new CardModel(); // Instantiate CardModel
-                $data['bankCardsDashboard'] = $cardModel->getCardsForBankDashboard($bankId);
+
+                // Get distinct card types for filter dropdown
+                $data['cardTypeFilterOptions'] = $cardModel->getDistinctCardTypesForBank($bankId);
+
+                // Get selected card type from GET request
+                $selectedCardType = isset($_GET['card_type']) && !empty($_GET['card_type']) ? $_GET['card_type'] : null;
+                $data['selectedCardType'] = $selectedCardType;
+
+                $data['bankCardsDashboard'] = $cardModel->getCardsForBankDashboard($bankId, $selectedCardType);
             } else {
                 // For Admin or other non-bank users, show system-wide totals
                 $data = [

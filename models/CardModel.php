@@ -239,7 +239,29 @@ class CardModel {
         return $cards;
     }
     
-    public function getCardsForBankDashboard($bankId) {
+    public function getDistinctCardTypesForBank($bankId) {
+        $sql = "SELECT DISTINCT type FROM cards WHERE bank_id = ? AND type IS NOT NULL AND type != '' ORDER BY type ASC";
+        $stmt = $this->db->prepare($sql);
+        if (!$stmt) {
+            error_log('Prepare failed for getDistinctCardTypesForBank: (' . $this->db->errno . ') ' . $this->db->error);
+            return [];
+        }
+        $stmt->bind_param("i", $bankId);
+        if (!$stmt->execute()) {
+            error_log('Execute failed for getDistinctCardTypesForBank: (' . $stmt->errno . ') ' . $stmt->error);
+            $stmt->close();
+            return [];
+        }
+        $result = $stmt->get_result();
+        $types = [];
+        while ($row = $result->fetch_assoc()) {
+            $types[] = $row['type'];
+        }
+        $stmt->close();
+        return $types;
+    }
+    
+    public function getCardsForBankDashboard($bankId, $cardTypeFilter = null) {
         $sql = "
             SELECT 
                 c.id AS card_id, 
@@ -251,8 +273,17 @@ class CardModel {
                 c.expired_at
             FROM cards c
             WHERE c.bank_id = ?
-            ORDER BY c.name ASC;  -- Optional: order by card name
         ";
+
+        $params = ['i', $bankId];
+
+        if (!empty($cardTypeFilter)) {
+            $sql .= " AND c.type = ?";
+            $params[0] .= 's'; // Add 's' for string type
+            $params[] = $cardTypeFilter;
+        }
+
+        $sql .= " ORDER BY c.name ASC;";
     
         $stmt = $this->db->prepare($sql);
         if (!$stmt) {
@@ -261,7 +292,10 @@ class CardModel {
             return []; // Return empty array or handle error as appropriate
         }
         
-        $stmt->bind_param("i", $bankId);
+        // Dynamically bind parameters
+        // array_values to re-index array for splat operator if needed, though direct pass should work
+        $stmt->bind_param(...$params);
+
         if (!$stmt->execute()) {
             // Handle execute error
             error_log('Execute failed: (' . $stmt->errno . ') ' . $stmt->error);

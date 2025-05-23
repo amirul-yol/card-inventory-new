@@ -80,6 +80,35 @@ include __DIR__ . '/../includes/headerNew.php';
 
   <?php if ($isBank && isset($bankId)): ?>
     <?php
+      // Prepare data for DashboardFilterControls component
+      $filterGroups = [];
+      if (isset($data['cardTypeFilterOptions']) && !empty($data['cardTypeFilterOptions'])) {
+          $filterGroups[] = [
+              'label'         => 'Filter by Card Type:', // This will be visually hidden by default in the component
+              'name'          => 'card_type',
+              'options'       => $data['cardTypeFilterOptions'],
+              'selectedValue' => $data['selectedCardType'] ?? null,
+              'allLabel'      => 'All Card Types'
+          ];
+      }
+
+      $formAction = 'index.php';
+      $formMethod = 'GET';
+      $hiddenPathValue = 'dashboardNew'; // Assuming 'dashboardNew' is the correct path for this view
+      $clearFilterLink = 'index.php?path=' . $hiddenPathValue;
+      
+      // Construct active filter message (optional, can be enhanced)
+      $activeFilterMessage = null;
+      if (!empty($data['selectedCardType'])) {
+        $activeFilterMessage = 'Filtered by Card Type: ' . htmlspecialchars($data['selectedCardType']);
+      }
+
+      // Include the filter controls component if there are any filter groups defined
+      if (!empty($filterGroups)) {
+          include __DIR__ . '/../components/DashboardFilterControls.php';
+      }
+    ?>
+    <?php
       // Use actual card data passed from DashboardController
       // Default to an empty array if not set or empty to prevent errors in the component
       $cardsData = isset($data['bankCardsDashboard']) && !empty($data['bankCardsDashboard']) ? $data['bankCardsDashboard'] : [];
