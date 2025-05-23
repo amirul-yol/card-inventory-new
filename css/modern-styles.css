@@ -135,3 +135,15 @@ a:hover, a:focus {
 .bank-carousel-component .carousel-indicators .active {
     background-color: #14B8A6; /* Teal for active, matching theme accent */
 }
+
+/* New Footer Styles */
+.app-footer {
+    font-size: 0.9rem;
+    /* Using variables from the defined palette */
+    background-color: var(--light-gray, #F5F5F5); /* Light Gray background */
+    border-top: 1px solid #dee2e6; /* A subtle top border */
+}
+
+.app-footer .text-muted {
+    color: var(--charcoal, #1A1A1A) !important; /* Charcoal text, ensure it overrides Bootstrap's default muted if necessary */
+}

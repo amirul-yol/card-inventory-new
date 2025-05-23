@@ -113,11 +113,22 @@ include __DIR__ . '/../includes/headerNew.php';
             ['name' => 'Bank Epsilon', 'logoUrl' => 'https://via.placeholder.com/150/FF00FF/FFFFFF?Text=EpsilonBank', 'cardsValue' => 150],
             ['name' => 'Bank Epsilon', 'logoUrl' => 'https://via.placeholder.com/150/FF00FF/FFFFFF?Text=EpsilonBank', 'cardsValue' => 150],
             ['name' => 'Bank Epsilon', 'logoUrl' => 'https://via.placeholder.com/150/FF00FF/FFFFFF?Text=EpsilonBank', 'cardsValue' => 150],
-            ['name' => 'Bank Epsilon', 'logoUrl' => 'https://via.placeholder.com/150/FF00FF/FFFFFF?Text=EpsilonBank', 'cardsValue' => 150],
         ];
         include __DIR__ . '/../components/BankCarousel.php';
       ?>
     </div>
   <?php endif; ?>
 
-</div>
+</div> <!-- End of .container-fluid from headerNew.php or a main wrapper -->
+
+<?php 
+  // Include the new footer
+  include __DIR__ . '/../includes/footerNew.php';
+?>
+
+<!-- Bootstrap JS and Popper.js (Order matters: Popper before Bootstrap JS) -->
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js"></script>
+
+</body>
+</html>
