@@ -48,7 +48,6 @@ class DashboardController {
     public function displayNewDashboard() {
         try {
             $isBank = $this->authController->isBank();
-            $isAdmin = $this->authController->isAdmin(); // For clarity
             $bankId = $isBank && isset($_SESSION['bank_id']) ? $_SESSION['bank_id'] : null;
 
             // Fetch real data based on user role
@@ -69,11 +68,20 @@ class DashboardController {
                 ];
             }
 
-            // Make $isBank, $isAdmin, $bankId available to the view as well, if needed directly in the view
+            // Fetch banks for the carousel, typically for Admin/non-bank users
+            $banksForCarousel = [];
+            if (!$isBank) {
+                require_once 'models/BankModel.php'; // Ensure BankModel is available
+                $bankModel = new BankModel();
+                $banksForCarousel = $bankModel->getBanksWithCardCount();
+            }
+
+            // Make $isBank, $bankId available to the view as well, if needed directly in the view
             // (though $data already contains role-specific info for cards)
             // For now, dashboardNew.php reconstructs its $infoCards based on $data and these roles.
 
-            include 'views/dashboard/dashboardNew.php'; // Load the new dashboard view
+            // Pass all necessary data to the view
+            include 'views/dashboard/dashboardNew.php'; 
         } catch (Exception $e) {
             error_log("New Dashboard Error: " . $e->getMessage());
             echo "Unable to load new dashboard data. Please try again later.";

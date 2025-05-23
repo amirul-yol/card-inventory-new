@@ -41,9 +41,10 @@ $carouselId = 'bankCarousel' . uniqid(); // Ensure unique ID for multiple carous
                         <?php foreach ($bankChunk as $bank): ?>
                             <div class="col-md-2 col-sm-4 col-6"> 
                                 <?php 
-                                    $bankLogoUrl = $bank['logoUrl'];
-                                    $bankName = $bank['name'];
-                                    $cardsValue = $bank['cardsValue'];
+                                    // Use keys from BankModel's getBanksWithCardCount() output
+                                    $bankLogoUrl = $bank['bank_logo'] ?? 'https://via.placeholder.com/150/CCCCCC/FFFFFF?Text=NoLogo'; // Fallback logo
+                                    $bankName = $bank['bank_name'] ?? 'Unknown Bank'; // Fallback name
+                                    $cardsValue = $bank['card_count'] ?? 0; // Fallback count
                                     include __DIR__ . '/BankCard.php'; // Include the BankCard component
                                 ?>
                             </div>

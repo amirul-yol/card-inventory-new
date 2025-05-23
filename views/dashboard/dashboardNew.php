@@ -78,27 +78,16 @@ include __DIR__ . '/../includes/headerNew.php';
     ?>
   </div>
 
-  <?php if ($isAdmin): // Admin-only section for Banks Carousel ?>
+  <?php 
+    // Show bank carousel for non-bank users if there's bank data from the controller
+    // $banksForCarousel is passed from DashboardController
+    if (!$isBank && !empty($banksForCarousel)): 
+  ?>
     <div class="mt-xl">
       <h2 class="mb-md">Banks</h2>
       <?php
-        // Mock bank data for the carousel
-        $banks = [
-            ['name' => 'Bank Alpha', 'logoUrl' => 'https://via.placeholder.com/150/0000FF/FFFFFF?Text=AlphaBank', 'cardsValue' => 120],
-            ['name' => 'Bank Beta', 'logoUrl' => 'https://via.placeholder.com/150/FF0000/FFFFFF?Text=BetaBank', 'cardsValue' => 95],
-            ['name' => 'Bank Gamma', 'logoUrl' => 'https://via.placeholder.com/150/00FF00/FFFFFF?Text=GammaBank', 'cardsValue' => 210],
-            ['name' => 'Bank Delta', 'logoUrl' => 'https://via.placeholder.com/150/FFFF00/000000?Text=DeltaBank', 'cardsValue' => 75],
-            ['name' => 'Bank Epsilon', 'logoUrl' => 'https://via.placeholder.com/150/FF00FF/FFFFFF?Text=EpsilonBank', 'cardsValue' => 150],
-            ['name' => 'Bank Epsilon', 'logoUrl' => 'https://via.placeholder.com/150/FF00FF/FFFFFF?Text=EpsilonBank', 'cardsValue' => 150],
-            ['name' => 'Bank Epsilon', 'logoUrl' => 'https://via.placeholder.com/150/FF00FF/FFFFFF?Text=EpsilonBank', 'cardsValue' => 150],
-            ['name' => 'Bank Epsilon', 'logoUrl' => 'https://via.placeholder.com/150/FF00FF/FFFFFF?Text=EpsilonBank', 'cardsValue' => 150],
-            ['name' => 'Bank Epsilon', 'logoUrl' => 'https://via.placeholder.com/150/FF00FF/FFFFFF?Text=EpsilonBank', 'cardsValue' => 150],
-            ['name' => 'Bank Epsilon', 'logoUrl' => 'https://via.placeholder.com/150/FF00FF/FFFFFF?Text=EpsilonBank', 'cardsValue' => 150],
-            ['name' => 'Bank Epsilon', 'logoUrl' => 'https://via.placeholder.com/150/FF00FF/FFFFFF?Text=EpsilonBank', 'cardsValue' => 150],
-            ['name' => 'Bank Epsilon', 'logoUrl' => 'https://via.placeholder.com/150/FF00FF/FFFFFF?Text=EpsilonBank', 'cardsValue' => 150],
-            ['name' => 'Bank Epsilon', 'logoUrl' => 'https://via.placeholder.com/150/FF00FF/FFFFFF?Text=EpsilonBank', 'cardsValue' => 150],
-            ['name' => 'Bank Epsilon', 'logoUrl' => 'https://via.placeholder.com/150/FF00FF/FFFFFF?Text=EpsilonBank', 'cardsValue' => 150],
-        ];
+        // Use the $banksForCarousel data passed from the controller
+        $banks = $banksForCarousel; 
         include __DIR__ . '/../components/BankCarousel.php';
       ?>
     </div>
