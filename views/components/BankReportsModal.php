@@ -100,19 +100,16 @@ if ($selectedBankId) {
                             </select>
                         </div>
                         <div class="col-md-4">
-                            <button type="submit" class="btn btn-primary w-100">View Reports</button>
+                            <button type="button" id="viewReportsBtn" class="btn btn-primary w-100">View Reports</button>
                         </div>
                     </form>
                     <?php else: ?>
                     <!-- Bank Change Option -->
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h6 class="mb-0">Currently viewing: <span class="fw-bold"><?= htmlspecialchars($modalBankName) ?></span></h6>
-                        <form method="post" id="changeBankForm" class="d-inline">
-                            <input type="hidden" name="change_bank" value="1">
-                            <button type="submit" class="btn btn-outline-secondary btn-sm">
-                                <i class="fas fa-exchange-alt me-1"></i> Change Bank
-                            </button>
-                        </form>
+                        <button type="button" id="changeBankBtn" class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-exchange-alt me-1"></i> Change Bank
+                        </button>
                     </div>
                     <?php endif; ?>
                 </div>
@@ -199,3 +196,100 @@ if ($selectedBankId) {
         </div>
     </div>
 </div>
+
+<!-- JavaScript for AJAX form submission to keep modal open -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initial call to set up event listeners
+        initializeModalEventListeners();
+    });
+    
+    // Initialize event listeners for dynamically loaded content
+    function initializeModalEventListeners() {
+        console.log('Initializing modal event listeners');
+        
+        // Bank selection form handling
+        const viewReportsBtn = document.getElementById('viewReportsBtn');
+        if (viewReportsBtn) {
+            console.log('Found viewReportsBtn, attaching listener');
+            // Remove any existing event listeners first to prevent duplicates
+            viewReportsBtn.replaceWith(viewReportsBtn.cloneNode(true));
+            
+            // Get the fresh reference after replacement
+            const freshViewReportsBtn = document.getElementById('viewReportsBtn');
+            freshViewReportsBtn.addEventListener('click', function() {
+                console.log('View Reports button clicked');
+                const bankId = document.getElementById('bankSelect').value;
+                if (!bankId) {
+                    alert('Please select a bank');
+                    return;
+                }
+                
+                // Create form data
+                const formData = new FormData();
+                formData.append('selected_bank_id', bankId);
+                
+                // Send AJAX request
+                fetch(window.location.href, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.text())
+                .then(html => {
+                    // Replace modal content
+                    const modalContent = document.querySelector('#bankReportsModal .modal-content');
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = html;
+                    const newModalContent = tempDiv.querySelector('#bankReportsModal .modal-content');
+                    if (newModalContent) {
+                        modalContent.innerHTML = newModalContent.innerHTML;
+                        // Re-initialize event listeners
+                        initializeModalEventListeners();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            });
+        }
+        
+        // Change bank button handling
+        const changeBankBtn = document.getElementById('changeBankBtn');
+        if (changeBankBtn) {
+            console.log('Found changeBankBtn, attaching listener');
+            // Remove any existing event listeners first to prevent duplicates
+            changeBankBtn.replaceWith(changeBankBtn.cloneNode(true));
+            
+            // Get the fresh reference after replacement
+            const freshChangeBankBtn = document.getElementById('changeBankBtn');
+            freshChangeBankBtn.addEventListener('click', function() {
+                console.log('Change Bank button clicked');
+                // Create form data
+                const formData = new FormData();
+                formData.append('change_bank', '1');
+                
+                // Send AJAX request
+                fetch(window.location.href, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.text())
+                .then(html => {
+                    // Replace modal content
+                    const modalContent = document.querySelector('#bankReportsModal .modal-content');
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = html;
+                    const newModalContent = tempDiv.querySelector('#bankReportsModal .modal-content');
+                    if (newModalContent) {
+                        modalContent.innerHTML = newModalContent.innerHTML;
+                        // Re-initialize event listeners
+                        initializeModalEventListeners();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            });
+        }
+    }
+</script>
