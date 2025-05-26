@@ -45,8 +45,6 @@ include __DIR__ . '/../includes/headerNew.php';
       } else { // Non-bank users (e.g., Admin)
           $infoCards = [
               [
-                  // TODO: For Admin/Non-Bank roles, this modal should first prompt for bank selection,
-                  // then display reports for the chosen bank. Currently shows generic mock data from BankReportsModal.php.
                   'icon' => 'fas fa-file-alt',
                   'label' => 'Total Reports',
                   'value' => $data['totalReports'] ?? 0,
