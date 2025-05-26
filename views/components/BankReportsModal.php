@@ -116,15 +116,11 @@ if ($selectedBankId) {
                     </div>
                     <?php endif; ?>
                 </div>
-                <?php else: ?>
+                <?php endif; ?>
+                
+                <?php if (!empty($selectedBankId) || $isBank): ?>
                 <!-- Action Buttons Section -->
                 <div class="mb-3 d-flex justify-content-start gap-2">
-                    <?php if ($isPO): ?>
-                        <a href="index.php?path=report/create" class="btn btn-primary">Create New Report</a>
-                    <?php else: ?>
-                        <button class="btn btn-primary" disabled title="Only Processing Officers can create reports">Create New Report</button>
-                    <?php endif; ?>
-
                     <?php if ($isLO): ?>
                         <?php if ($reportExistsForToday): ?>
                             <div class="tooltip">
