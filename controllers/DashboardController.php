@@ -3,6 +3,7 @@ require_once 'db/database.php';
 include_once __DIR__ . '/../models/DashboardModel.php';
 require_once 'controllers/AuthController.php';
 require_once 'models/CardModel.php'; // Ensure CardModel is included
+require_once 'models/BankModel.php'; // Added for fetching bank details
 
 class DashboardController {
     private $model;
@@ -59,6 +60,13 @@ class DashboardController {
                     'totalDebitCards' => $this->model->getTotalDebitCardsByBank($bankId),
                     'totalCreditCards' => $this->model->getTotalCreditCardsByBank($bankId),
                 ];
+
+                // Add bankId and bankName for the modal context
+                $data['currentBankId'] = $bankId;
+                $bankDetailsModel = new BankModel(); // Instantiate BankModel
+                $bankInfo = $bankDetailsModel->getBankDetails($bankId); // Get bank details including name
+                $data['currentBankName'] = $bankInfo ? $bankInfo['name'] : 'Selected Bank'; // Fallback name
+
                 // Fetch cards for the bank user's dashboard quick info table
                 $cardModel = new CardModel(); // Instantiate CardModel
 
@@ -99,7 +107,6 @@ class DashboardController {
             // Fetch banks for the carousel, typically for Admin/non-bank users
             $banksForCarousel = [];
             if (!$isBank) {
-                require_once 'models/BankModel.php'; // Ensure BankModel is available
                 $bankModel = new BankModel();
                 $banksForCarousel = $bankModel->getBanksWithCardCount();
             }

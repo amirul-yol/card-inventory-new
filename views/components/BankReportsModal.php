@@ -1,71 +1,41 @@
 <?php
 // BankReportsModal.php
 // This component displays bank reports in a Bootstrap modal.
-// Mock data is used for now.
 
-// Expected to be included in a page where $isPO (is Processing Officer) 
-// and $reportExistsForToday variables might be available for button logic.
-// For mock purposes, we'll assume some defaults or omit complex logic.
-$isPO = false; // Mock: Assume not a Processing Officer for button display
-$isLO = true; // Mock: Assume is a Logistics Officer for withdraw button
-$reportExistsForToday = false; // Mock
+// Expected variables from parent scope:
+// $modalBankId - The ID of the bank to show reports for
+// $modalBankName - The name of the bank
+// $isPO - Whether the current user is a Processing Officer
+// $isLO - Whether the current user is a Logistics Officer
 
-$mockReports = [
-    [
-        'id' => 1,
-        'report_date' => '23 May 2025',
-        'status' => 'Approved',
-        'details' => 'Monthly card stock reconciliation.',
-    ],
-    [
-        'id' => 2,
-        'report_date' => '22 May 2025',
-        'status' => 'Pending',
-        'details' => 'Daily withdrawal summary.',
-    ],
-    [
-        'id' => 3,
-        'report_date' => '20 May 2025',
-        'status' => 'Generated',
-        'details' => 'Card activation report.',
-    ],
-    [
-        'id' => 4,
-        'report_date' => '20 May 2025',
-        'status' => 'Generated',
-        'details' => 'Card activation report.',
-    ],
-    [
-        'id' => 5,
-        'report_date' => '20 May 2025',
-        'status' => 'Generated',
-        'details' => 'Card activation report.',
-    ],
-    [
-        'id' => 6,
-        'report_date' => '20 May 2025',
-        'status' => 'Generated',
-        'details' => 'Card activation report.',
-    ],
-    [
-        'id' => 7,
-        'report_date' => '20 May 2025',
-        'status' => 'Generated',
-        'details' => 'Card activation report.',
-    ],
-    [
-        'id' => 8,
-        'report_date' => '20 May 2025',
-        'status' => 'Generated',
-        'details' => 'Card activation report.',
-    ],
-    [
-        'id' => 9,
-        'report_date' => '20 May 2025',
-        'status' => 'Generated',
-        'details' => 'Card activation report.',
-    ],
-];
+// Initialize required models
+require_once __DIR__ . '/../../models/ReportModel.php';
+require_once __DIR__ . '/../../controllers/AuthController.php';
+
+// Get user roles
+$authController = new AuthController();
+$isPO = $authController->isProductionOfficer();
+$isLO = $authController->isLogisticsOfficer();
+
+// Initialize report data
+$reports = [];
+$reportExistsForToday = false;
+
+// Only fetch reports if we have a bank ID
+if ($modalBankId) {
+    $reportModel = new ReportModel();
+    $reports = $reportModel->getReportsByBank($modalBankId);
+    
+    // Check if a report exists for today
+    $todayDate = date('Y-m-d');
+    foreach ($reports as $report) {
+        if ($report['report_date'] === $todayDate) {
+            $reportExistsForToday = true;
+            break;
+        }
+    }
+}
+
 
 ?>
 
@@ -73,7 +43,12 @@ $mockReports = [
     <div class="modal-dialog modal-lg modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="bankReportsModalLabel">Bank Reports</h5>
+                <h5 class="modal-title" id="bankReportsModalLabel">
+                    Bank Reports
+                    <?php if ($modalBankName): ?>
+                        <small class="text-muted">for <?= htmlspecialchars($modalBankName) ?></small>
+                    <?php endif; ?>
+                </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -85,20 +60,26 @@ $mockReports = [
                         <button class="btn btn-primary" disabled title="Only Processing Officers can create reports">Create New Report</button>
                     <?php endif; ?>
 
-                    <?php if ($isLO): // Assuming LO can withdraw, and PO might have different view ?>
+                    <?php if ($isLO): ?>
                         <?php if ($reportExistsForToday): ?>
-                            <button class="btn btn-warning disabled" title="A withdrawal report already exists for today">Withdraw Card (Exists)</button>
+                            <div class="tooltip">
+                                <button class="btn btn-warning disabled" title="A withdrawal report already exists for today">Withdraw Card</button>
+                                <span class="tooltip-text">A withdrawal report already exists for today</span>
+                            </div>
                         <?php else: ?>
-                            <a href="index.php?path=report/withdraw" class="btn btn-warning">Withdraw Card</a>
+                            <a href="index.php?path=report/withdrawCard&bank_id=<?= $modalBankId; ?>" class="btn btn-warning">Withdraw Card</a>
                         <?php endif; ?>
                     <?php else: ?>
-                         <button class="btn btn-warning disabled" title="Only Logistics Officers can withdraw cards">Withdraw Card</button>
+                        <div class="tooltip">
+                            <button class="btn btn-warning disabled" title="Only Logistics Officers can withdraw cards">Withdraw Card</button>
+                            <span class="tooltip-text">Only Logistics Officers can withdraw cards</span>
+                        </div>
                     <?php endif; ?>
                 </div>
 
                 <!-- Existing Reports Table -->
                 <h6>Existing Reports</h6>
-                <?php if (!empty($mockReports)): ?>
+                <?php if (!empty($reports)): ?>
                     <div class="table-responsive">
                         <table class="table table-striped table-hover table-sm">
                             <thead class="table-dark">
@@ -110,16 +91,28 @@ $mockReports = [
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php foreach ($mockReports as $report): ?>
+                                <?php foreach ($reports as $report): ?>
                                     <tr>
-                                        <td><?= htmlspecialchars($report['report_date']); ?></td>
-                                        <td><?= htmlspecialchars($report['status']); ?></td>
-                                        <td><?= htmlspecialchars($report['details']); ?></td>
+                                        <td><?= htmlspecialchars($report['report_date'] ?? 'N/A'); ?></td>
+                                        <td><?= htmlspecialchars($report['status'] ?? 'N/A'); ?></td>
+                                        <td><?= htmlspecialchars($report['details'] ?? 'No Details Available'); ?></td>
                                         <td class="text-center">
-                                            <a href="#" class="btn btn-sm btn-outline-primary me-1" title="View Report Details">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                            <a href="#" class="btn btn-sm btn-outline-secondary" title="Download Report">
+                                            <?php if ($isPO): ?>
+                                                <a href="index.php?path=report/verify&report_id=<?= $report['id']; ?>&bank_id=<?= $modalBankId; ?>" 
+                                                   class="btn btn-sm btn-outline-primary me-1" 
+                                                   title="<?= $report['status'] === 'Verified' ? 'View Report' : 'Verify Report' ?>">
+                                                    <?= $report['status'] === 'Verified' ? 'View' : 'Verify' ?>
+                                                </a>
+                                            <?php else: ?>
+                                                <a href="index.php?path=report/verify&report_id=<?= $report['id']; ?>&bank_id=<?= $modalBankId; ?>" 
+                                                   class="btn btn-sm btn-outline-primary me-1" 
+                                                   title="View Report Details">
+                                                    View
+                                                </a>
+                                            <?php endif; ?>
+                                            <a href="index.php?path=report/download&report_id=<?= $report['id']; ?>" 
+                                               class="btn btn-sm btn-outline-secondary" 
+                                               title="Generate Report">
                                                 <i class="fas fa-download"></i>
                                             </a>
                                         </td>

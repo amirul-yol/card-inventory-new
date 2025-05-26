@@ -196,6 +196,12 @@ include __DIR__ . '/../includes/headerNew.php';
 <?php 
   // Include the Bank Reports Modal component here, so it's available on the page
   // It's used by both bank users and admin/other non-bank roles via their respective 'Total Reports' InfoCard.
+  
+  // Set up variables for the modal
+  $modalBankId = $isBank ? ($data['currentBankId'] ?? null) : null;
+  $modalBankName = $isBank ? ($data['currentBankName'] ?? 'Selected Bank') : null;
+  
+  // Include the modal component with bank context
   include __DIR__ . '/../components/BankReportsModal.php';
 ?>
 
