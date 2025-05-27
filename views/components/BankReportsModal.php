@@ -82,38 +82,8 @@ if ($selectedBankId) {
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <?php if (!$isBank): ?>
-                <!-- Bank Selection for Admin, LO, PO users -->
-                <div class="bank-selection mb-4">
-                    <?php if (empty($selectedBankId)): ?>
-                    <h6>Select a Bank</h6>
-                    <form method="post" id="bankSelectionForm" class="row g-3 align-items-end">
-                        <div class="col-md-8">
-                            <label for="bankSelect" class="form-label">Choose a bank to view reports</label>
-                            <select class="form-select" id="bankSelect" name="selected_bank_id" required>
-                                <option value="">-- Select Bank --</option>
-                                <?php foreach ($allBanks as $bank): ?>
-                                    <option value="<?= $bank['bank_id'] ?>">
-                                        <?= htmlspecialchars($bank['bank_name']) ?> (<?= $bank['card_count'] ?> cards)
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <button type="button" id="viewReportsBtn" class="btn btn-primary w-100">View Reports</button>
-                        </div>
-                    </form>
-                    <?php else: ?>
-                    <!-- Bank Change Option -->
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h6 class="mb-0">Currently viewing: <span class="fw-bold"><?= htmlspecialchars($modalBankName) ?></span></h6>
-                        <button type="button" id="changeBankBtn" class="btn btn-outline-secondary btn-sm">
-                            <i class="fas fa-exchange-alt me-1"></i> Change Bank
-                        </button>
-                    </div>
-                    <?php endif; ?>
-                </div>
-                <?php endif; ?>
+                <!-- Include the Bank Selection Component -->                
+                <?php include_once __DIR__ . '/BankSelection.php'; ?>
                 
                 <?php if (!empty($selectedBankId) || $isBank): ?>
                 <!-- Action Buttons Section -->
