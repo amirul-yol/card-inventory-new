@@ -125,7 +125,7 @@ if ($selectedBankId) {
                                 <span class="tooltip-text">A withdrawal report already exists for today</span>
                             </div>
                         <?php else: ?>
-                            <a href="index.php?path=report/withdrawCard&bank_id=<?= $selectedBankId; ?>" class="btn btn-warning">Withdraw Card</a>
+                            <button type="button" id="withdrawCardBtn" class="btn btn-warning" data-bank-id="<?= $selectedBankId; ?>">Withdraw Card</button>
                         <?php endif; ?>
                     <?php else: ?>
                         <div class="tooltip">
@@ -137,8 +137,11 @@ if ($selectedBankId) {
                 <?php endif; ?>
 
                 <?php if (!empty($selectedBankId)): ?>
-                <!-- Existing Reports Table -->
-                <h6>Existing Reports</h6>
+                <!-- Modal content sections -->
+                <div id="modalContentSections">
+                    <!-- Reports Section (default view) -->
+                    <div id="reportsSection" class="modal-section">
+                        <h6>Existing Reports</h6>
                 <?php if (!empty($reports)): ?>
                     <div class="table-responsive">
                         <table class="table table-striped table-hover table-sm">
@@ -189,6 +192,27 @@ if ($selectedBankId) {
                         <p>No reports available.</p>
                     <?php endif; ?>
                 <?php endif; ?>
+                    </div><!-- End of Reports Section -->
+                    
+                    <!-- Withdrawal Section (initially hidden) -->
+                    <div id="withdrawalSection" class="modal-section" style="display: none;">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6>Withdraw Cards - <span id="withdrawalBankName"><?= htmlspecialchars($modalBankName) ?></span></h6>
+                            <button type="button" id="backToReportsBtn" class="btn btn-outline-secondary btn-sm">
+                                <i class="fas fa-arrow-left me-1"></i> Back to Reports
+                            </button>
+                        </div>
+                        <div id="withdrawalContent">
+                            <!-- This will be filled with AJAX content -->
+                            <div class="text-center p-5">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <p class="mt-3">Loading withdrawal interface...</p>
+                            </div>
+                        </div>
+                    </div><!-- End of Withdrawal Section -->
+                </div><!-- End of Modal Content Sections -->
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -289,6 +313,54 @@ if ($selectedBankId) {
                 .catch(error => {
                     console.error('Error:', error);
                 });
+            });
+        }
+        
+        // Withdraw Card button handling
+        const withdrawCardBtn = document.getElementById('withdrawCardBtn');
+        if (withdrawCardBtn) {
+            console.log('Found withdrawCardBtn, attaching listener');
+            // Remove any existing event listeners first to prevent duplicates
+            withdrawCardBtn.replaceWith(withdrawCardBtn.cloneNode(true));
+            
+            // Get the fresh reference after replacement
+            const freshWithdrawCardBtn = document.getElementById('withdrawCardBtn');
+            freshWithdrawCardBtn.addEventListener('click', function() {
+                console.log('Withdraw Card button clicked');
+                const bankId = this.getAttribute('data-bank-id');
+                
+                // Show withdrawal section, hide reports section
+                document.getElementById('reportsSection').style.display = 'none';
+                document.getElementById('withdrawalSection').style.display = 'block';
+                
+                // In the future, we'll load the actual withdrawal content here via AJAX
+                console.log('Will load withdrawal interface for bank ID:', bankId);
+                
+                // For now, just show a placeholder message
+                document.getElementById('withdrawalContent').innerHTML = `
+                    <div class="alert alert-info">
+                        <p>Withdrawal interface for bank ID ${bankId} will be loaded here.</p>
+                        <p>This is a placeholder. The actual withdrawal interface will be implemented in the next step.</p>
+                    </div>
+                `;
+            });
+        }
+        
+        // Back to Reports button handling
+        const backToReportsBtn = document.getElementById('backToReportsBtn');
+        if (backToReportsBtn) {
+            console.log('Found backToReportsBtn, attaching listener');
+            // Remove any existing event listeners first to prevent duplicates
+            backToReportsBtn.replaceWith(backToReportsBtn.cloneNode(true));
+            
+            // Get the fresh reference after replacement
+            const freshBackToReportsBtn = document.getElementById('backToReportsBtn');
+            freshBackToReportsBtn.addEventListener('click', function() {
+                console.log('Back to Reports button clicked');
+                
+                // Show reports section, hide withdrawal section
+                document.getElementById('reportsSection').style.display = 'block';
+                document.getElementById('withdrawalSection').style.display = 'none';
             });
         }
     }
