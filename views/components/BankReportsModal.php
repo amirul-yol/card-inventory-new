@@ -69,6 +69,9 @@ if ($selectedBankId) {
 
 ?>
 
+<!-- Include the modal styles -->
+<link rel="stylesheet" href="/css/modal-styles.css">
+
 <div class="modal fade" id="bankReportsModal" tabindex="-1" aria-labelledby="bankReportsModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-scrollable">
         <div class="modal-content">
@@ -87,7 +90,7 @@ if ($selectedBankId) {
                 
                 <?php if (!empty($selectedBankId) || $isBank): ?>
                 <!-- Action Buttons Section -->
-                <div class="mb-3 d-flex justify-content-start gap-2">
+                <div class="action-buttons-section mb-3 d-flex justify-content-start gap-2">
                     <?php if ($isLO): ?>
                         <?php if ($reportExistsForToday): ?>
                             <div class="tooltip">
@@ -116,24 +119,8 @@ if ($selectedBankId) {
                     <!-- Include the Reports List Component -->
                     <?php include_once __DIR__ . '/ReportsList.php'; ?>
                     
-                    <!-- Withdrawal Section (initially hidden) -->
-                    <div id="withdrawalSection" class="modal-section" style="display: none;">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h6>Withdraw Cards - <span id="withdrawalBankName"><?= htmlspecialchars($modalBankName) ?></span></h6>
-                            <button type="button" id="backToReportsBtn" class="btn btn-outline-secondary btn-sm">
-                                <i class="fas fa-arrow-left me-1"></i> Back to Reports
-                            </button>
-                        </div>
-                        <div id="withdrawalContent">
-                            <!-- This will be filled with AJAX content -->
-                            <div class="text-center p-5">
-                                <div class="spinner-border text-primary" role="status">
-                                    <span class="visually-hidden">Loading...</span>
-                                </div>
-                                <p class="mt-3">Loading withdrawal interface...</p>
-                            </div>
-                        </div>
-                    </div><!-- End of Withdrawal Section -->
+                    <!-- Include the Withdrawal Section Component -->
+                    <?php include_once __DIR__ . '/WithdrawalSection.php'; ?>
                 </div><!-- End of Modal Content Sections -->
                 <?php endif; ?>
             </div>

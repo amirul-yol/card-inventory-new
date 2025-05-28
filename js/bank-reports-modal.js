@@ -94,6 +94,9 @@ function initializeWithdrawalSection() {
             document.getElementById('reportsSection').style.display = 'none';
             document.getElementById('withdrawalSection').style.display = 'block';
             
+            // Add class to modal for state management
+            document.querySelector('#bankReportsModal').classList.add('modal-in-withdrawal-mode');
+            
             // In the future, we'll load the actual withdrawal content here via AJAX
             console.log('Will load withdrawal interface for bank ID:', bankId);
             
@@ -122,6 +125,9 @@ function initializeWithdrawalSection() {
             // Show reports section, hide withdrawal section
             document.getElementById('reportsSection').style.display = 'block';
             document.getElementById('withdrawalSection').style.display = 'none';
+            
+            // Remove class from modal for state management
+            document.querySelector('#bankReportsModal').classList.remove('modal-in-withdrawal-mode');
         });
     }
 }
