@@ -106,64 +106,15 @@ if ($selectedBankId) {
                 </div>
                 <?php endif; ?>
 
-                <?php if (!empty($selectedBankId)): ?>
-                    <!-- Modal content sections -->
-                    <div id="modalContentSections">
-                        <!-- Reports Section (default view) -->
-                        <div id="reportsSection" class="modal-section">
-                            <h6>Existing Reports</h6>
-                            <?php if (!empty($reports)): ?>
-                                <div class="table-responsive">
-                                    <table class="table table-striped table-hover table-sm">
-                                        <thead class="table-dark">
-                                            <tr>
-                                                <th>Date</th>
-                                                <th>Status</th>
-                                                <th>Details</th>
-                                                <th class="text-center">Actions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <?php foreach ($reports as $report): ?>
-                                                <tr>
-                                                    <td><?= htmlspecialchars($report['report_date'] ?? 'N/A'); ?></td>
-                                                    <td><?= htmlspecialchars($report['status'] ?? 'N/A'); ?></td>
-                                                    <td><?= htmlspecialchars($report['details'] ?? 'No Details Available'); ?></td>
-                                                    <td class="text-center">
-                                                        <?php if ($isPO): ?>
-                                                            <a href="index.php?path=report/verify&report_id=<?= $report['id']; ?>&bank_id=<?= $selectedBankId; ?>" 
-                                                               class="btn btn-sm btn-outline-primary me-1" 
-                                                               title="<?= $report['status'] === 'Verified' ? 'View Report' : 'Verify Report' ?>">
-                                                                <?= $report['status'] === 'Verified' ? 'View' : 'Verify' ?>
-                                                            </a>
-                                                        <?php else: ?>
-                                                            <a href="index.php?path=report/verify&report_id=<?= $report['id']; ?>&bank_id=<?= $selectedBankId; ?>" 
-                                                               class="btn btn-sm btn-outline-primary me-1" 
-                                                               title="View Report Details">
-                                                                View
-                                                            </a>
-                                                        <?php endif; ?>
-                                                        <a href="index.php?path=report/download&report_id=<?= $report['id']; ?>" 
-                                                           class="btn btn-sm btn-outline-secondary" 
-                                                           title="Generate Report">
-                                                            <i class="fas fa-download"></i>
-                                                        </a>
-                                                    </td>
-                                                </tr>
-                                            <?php endforeach; ?>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            <?php else: ?>
-                                <p>No reports found.</p>
-                            <?php endif; ?>
-                        </div><!-- End of Reports Section -->
-                    </div>
-                <?php else: ?>
-                    <?php if ($isBank): ?>
-                        <p>No reports available.</p>
-                    <?php endif; ?>
+                <?php if ($isBank && empty($selectedBankId)): ?>
+                    <p class="text-center my-4">No reports available for your bank.</p>
                 <?php endif; ?>
+                
+                <!-- Modal content sections -->
+                <?php if (!empty($selectedBankId)): ?>
+                <div id="modalContentSections">
+                    <!-- Include the Reports List Component -->
+                    <?php include_once __DIR__ . '/ReportsList.php'; ?>
                     
                     <!-- Withdrawal Section (initially hidden) -->
                     <div id="withdrawalSection" class="modal-section" style="display: none;">
@@ -184,6 +135,7 @@ if ($selectedBankId) {
                         </div>
                     </div><!-- End of Withdrawal Section -->
                 </div><!-- End of Modal Content Sections -->
+                <?php endif; ?>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
