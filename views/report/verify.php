@@ -91,7 +91,7 @@ include 'views/includes/sidebar.php';
             </tbody>
         </table>
 
-        <!-- <button type="submit" name="verify_report" class="btn btn-primary" <?= $canVerify ? '' : 'disabled' ?>>
+        <button type="submit" name="verify_report" class="btn btn-primary" <?= $canVerify ? '' : 'disabled' ?>>
             <?php if ($isVerified): ?>
                 Already Verified
             <?php elseif (!$isPO): ?>
@@ -99,7 +99,7 @@ include 'views/includes/sidebar.php';
             <?php else: ?>
                 Verify
             <?php endif; ?>
-        </button> -->
+        </button>
     </form>
 </div>
 
