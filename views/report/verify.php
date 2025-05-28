@@ -55,8 +55,8 @@ include 'views/includes/sidebar.php';
                     <th>Card Name</th>
                     <th>Quantity</th>
                     <th>Remarks</th>
-                    <!-- <th>Reject Quantity</th>
-                    <th>Action</th> -->
+                    <th>Reject Quantity</th>
+                    <th>Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -66,7 +66,7 @@ include 'views/includes/sidebar.php';
                             <td><?= htmlspecialchars($transaction['card_name'] ?? 'Unknown', ENT_QUOTES, 'UTF-8'); ?></td>
                             <td><?= htmlspecialchars($transaction['quantity']); ?></td>
                             <td><?= htmlspecialchars($transaction['remarks']); ?></td>
-                            <!-- <td>
+                            <td>
                                 <?php 
                                     $rejectedAmount = $reportModel->getRejectedAmount($transaction['id']);
                                     echo htmlspecialchars($rejectedAmount ?? '0');
@@ -80,7 +80,7 @@ include 'views/includes/sidebar.php';
                                 <?php else: ?>
                                     <button type="button" class="btn btn-danger" disabled>Reject</button>
                                 <?php endif; ?>
-                            </td> -->
+                            </td>
                         </tr>
                     <?php endforeach; ?>
                 <?php else: ?>
@@ -91,7 +91,7 @@ include 'views/includes/sidebar.php';
             </tbody>
         </table>
 
-        <!-- <button type="submit" name="verify_report" class="btn btn-primary" <?= $canVerify ? '' : 'disabled' ?>>
+        <button type="submit" name="verify_report" class="btn btn-primary" <?= $canVerify ? '' : 'disabled' ?>>
             <?php if ($isVerified): ?>
                 Already Verified
             <?php elseif (!$isPO): ?>
@@ -99,7 +99,7 @@ include 'views/includes/sidebar.php';
             <?php else: ?>
                 Verify
             <?php endif; ?>
-        </button> -->
+        </button>
     </form>
 </div>
 
