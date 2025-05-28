@@ -91,7 +91,7 @@ if ($selectedBankId) {
                 <?php if (!empty($selectedBankId) || $isBank): ?>
                 <!-- Action Buttons Section -->
                 <div class="action-buttons-section mb-3 d-flex justify-content-start gap-2">
-                    <?php if ($isLO): ?>
+                    <?php if ($isLO || $isAdmin): ?>
                         <?php if ($reportExistsForToday): ?>
                             <div class="tooltip">
                                 <button class="btn btn-warning disabled" title="A withdrawal report already exists for today">Withdraw Card</button>
