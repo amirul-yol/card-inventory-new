@@ -135,7 +135,7 @@ foreach ($reports as $report) {
                                     View
                                 </a>
                             <?php endif; ?>
-                            <!-- <a href="index.php?path=report/download&report_id=<?= $report['id']; ?>" class="btn btn-action">Generate Report</a> -->
+                            <a href="index.php?path=report/download&report_id=<?= $report['id']; ?>" class="btn btn-action">Generate Report</a>
                         </td>
                     </tr>
                 <?php endforeach; ?>
