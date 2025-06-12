@@ -54,9 +54,11 @@ include 'views/includes/sidebar.php';
                 <tr>
                     <th>Card Name</th>
                     <th>Withdraw Quantity</th>
-                    <th>Card Balance</th>
                     <th>Reject Quantity</th>
-                    <th>Action</th>
+                    <th>Card Balance</th>
+                    <?php if (!($authController->isBank() && isset($_SESSION['bank_id']))): ?>
+                        <th>Action</th>
+                    <?php endif; ?>
                 </tr>
             </thead>
             <tbody>
@@ -65,22 +67,24 @@ include 'views/includes/sidebar.php';
                         <tr>
                             <td><?= htmlspecialchars($transaction['card_name'] ?? 'Unknown', ENT_QUOTES, 'UTF-8'); ?></td>
                             <td><?= htmlspecialchars($transaction['transaction_quantity']); ?></td>
-                            <td><?php echo htmlspecialchars(number_format($transaction['card_balance'])); ?></td>
                             <td>
                                 <?php 
                                     $rejectedAmount = $reportModel->getRejectedAmount($transaction['id']);
                                     echo htmlspecialchars($rejectedAmount ?? '0');
                                 ?>
                             </td>
-                            <td>
-                                <?php if ($canVerify): ?>
-                                    <a href="index.php?path=report/rejectCard&transaction_id=<?= $transaction['id']; ?>&bank_id=<?= $bankId ?>&report_id=<?= $reportId ?>" class="btn btn-danger">
-                                        Reject
-                                    </a>
-                                <?php else: ?>
-                                    <button type="button" class="btn btn-danger" disabled>Reject</button>
-                                <?php endif; ?>
-                            </td>
+                            <td><?php echo htmlspecialchars(number_format($transaction['card_balance'])); ?></td>
+                            <?php if (!($authController->isBank() && isset($_SESSION['bank_id']))): ?>
+                                <td>
+                                    <?php if ($canVerify): ?>
+                                        <a href="index.php?path=report/rejectCard&transaction_id=<?= $transaction['id']; ?>&bank_id=<?= $bankId ?>&report_id=<?= $reportId ?>" class="btn btn-danger">
+                                            Reject
+                                        </a>
+                                    <?php else: ?>
+                                        <button type="button" class="btn btn-danger" disabled>Reject</button>
+                                    <?php endif; ?>
+                                </td>
+                            <?php endif; ?>
                         </tr>
                     <?php endforeach; ?>
                 <?php else: ?>
@@ -91,6 +95,7 @@ include 'views/includes/sidebar.php';
             </tbody>
         </table>
 
+        <?php if (!($authController->isBank() && isset($_SESSION['bank_id']))): ?>
         <button type="submit" name="verify_report" class="btn btn-primary" <?= $canVerify ? '' : 'disabled' ?>>
             <?php if ($isVerified): ?>
                 Already Verified
@@ -100,6 +105,7 @@ include 'views/includes/sidebar.php';
                 Verify
             <?php endif; ?>
         </button>
+        <?php endif; ?>
     </form>
 </div>
 
