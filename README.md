@@ -50,7 +50,3 @@ This repository contains sensitive code. Make sure to:
 
 
 ################################################
-
-view_transaction kena fix bagi display deposit shj - kat model
-dah siap withdraw (button Finish Withdaw), success message (withdraw.php)
-generate report 
