@@ -53,8 +53,8 @@ include 'views/includes/sidebar.php';
             <thead>
                 <tr>
                     <th>Card Name</th>
-                    <th>Quantity</th>
-                    <th>Remarks</th>
+                    <th>Withdraw Quantity</th>
+                    <th>Card Balance</th>
                     <th>Reject Quantity</th>
                     <th>Action</th>
                 </tr>
@@ -64,8 +64,8 @@ include 'views/includes/sidebar.php';
                     <?php foreach ($transactions as $transaction): ?>
                         <tr>
                             <td><?= htmlspecialchars($transaction['card_name'] ?? 'Unknown', ENT_QUOTES, 'UTF-8'); ?></td>
-                            <td><?= htmlspecialchars($transaction['quantity']); ?></td>
-                            <td><?= htmlspecialchars($transaction['remarks']); ?></td>
+                            <td><?= htmlspecialchars($transaction['transaction_quantity']); ?></td>
+                            <td><?php echo htmlspecialchars(number_format($transaction['card_balance'])); ?></td>
                             <td>
                                 <?php 
                                     $rejectedAmount = $reportModel->getRejectedAmount($transaction['id']);

@@ -359,7 +359,7 @@ class ReportModel {
 
     public function getTransactionsForReport($reportId)
     {
-        $query = "SELECT t.id, t.card_id, t.quantity, t.transaction_date, t.remarks, c.name AS card_name
+        $query = "SELECT t.id, t.card_id, t.quantity AS transaction_quantity, t.transaction_date, t.remarks, c.name AS card_name, c.quantity AS card_balance
                 FROM transactions t
                 LEFT JOIN cards c ON t.card_id = c.id
                 WHERE t.report_id = ? AND t.transaction_type = 'withdraw'";
