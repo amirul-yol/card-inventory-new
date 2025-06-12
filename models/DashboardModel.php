@@ -103,4 +103,30 @@ class DashboardModel {
         }
         return 0;
     }
+
+    public function getCardCountsByTypeForBank($bankId) {
+        $sql = "SELECT type, COUNT(*) as count FROM cards WHERE bank_id = ? GROUP BY type ORDER BY type";
+        $stmt = $this->conn->prepare($sql);
+        if (!$stmt) {
+            error_log("Prepare failed in getCardCountsByTypeForBank: (" . $this->conn->errno . ") " . $this->conn->error);
+            return [];
+        }
+        $stmt->bind_param("i", $bankId);
+        if (!$stmt->execute()) {
+            error_log("Execute failed in getCardCountsByTypeForBank: (" . $stmt->errno . ") " . $stmt->error);
+            $stmt->close();
+            return [];
+        }
+        $result = $stmt->get_result();
+        $cardCounts = [];
+        if ($result) {
+            while ($row = $result->fetch_assoc()) {
+                if (!empty($row['type'])) {
+                    $cardCounts[$row['type']] = $row['count'];
+                }
+            }
+        }
+        $stmt->close();
+        return $cardCounts;
+    }
 }

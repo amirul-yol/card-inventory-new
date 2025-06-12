@@ -24,17 +24,14 @@ include __DIR__ . '/../includes/header.php';
                     <h2>Total Cards</h2>
                     <p><?php echo $data['totalCards']; ?></p>
                 </div>
-                <!-- Debit Cards Box -->
-                <!-- Debit Cards Box -->
-                <div class="dashboard-box clickable" onclick="window.location.href='index.php?path=card&type=DEBIT CARD'">
-                    <h2>Debit Cards</h2>
-                    <p><?php echo $data['totalDebitCards']; ?></p>
-                </div>
-                <!-- Credit Cards Box -->
-                <div class="dashboard-box clickable" onclick="window.location.href='index.php?path=card&type=CREDIT CARD'">
-                    <h2>Credit Cards</h2>
-                    <p><?php echo $data['totalCreditCards']; ?></p>
-                </div>
+                <?php if (!empty($data['cardTypes']) && is_array($data['cardTypes'])): ?>
+                    <?php foreach ($data['cardTypes'] as $cardType => $count): ?>
+                        <div class="dashboard-box clickable" onclick="window.location.href='index.php?path=card&type=<?php echo urlencode($cardType); ?>'">
+                            <h2><?php echo htmlspecialchars(ucwords(strtolower($cardType))); ?></h2>
+                            <p><?php echo $count; ?></p>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             <?php else: ?>
                 <!-- Admin view boxes -->
                 <div class="dashboard-box">

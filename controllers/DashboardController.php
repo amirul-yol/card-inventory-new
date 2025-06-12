@@ -23,8 +23,7 @@ class DashboardController {
                 $data = [
                     'totalReports' => $this->model->getTotalReportsByBank($bankId),
                     'totalCards' => $this->model->getTotalCardsByBank($bankId),
-                    'totalDebitCards' => $this->model->getTotalDebitCardsByBank($bankId),
-                    'totalCreditCards' => $this->model->getTotalCreditCardsByBank($bankId),
+                    'cardTypes' => $this->model->getCardCountsByTypeForBank($bankId), // New dynamic card type counts
                 ];
             } else {
                 // For Admin, PO, LO users - show system-wide totals
