@@ -12,15 +12,23 @@ class CardController {
     public function index() {
         $model = new CardModel();
         
-        // Get card type filter if set
+        // Get distinct card types. If bank user, get types for their bank only.
+        if ($this->authController->isBank() && isset($_SESSION['bank_id'])) {
+            $bankIdForTypes = $_SESSION['bank_id'];
+            $cardTypes = $model->getDistinctCardTypes($bankIdForTypes);
+        } else {
+            $cardTypes = $model->getDistinctCardTypes();
+        }
+
+        // Get card type filter from URL if set
         $cardType = isset($_GET['type']) ? strtoupper(trim($_GET['type'])) : null;
-        
-        // If card type is 'CREDIT CARD' or 'DEBIT CARD', filter by that type
-        if (in_array($cardType, ['CREDIT CARD', 'DEBIT CARD'])) {
+
+        // If a valid card type is specified in the URL, filter by it
+        if ($cardType && in_array($cardType, $cardTypes)) {
             $allBanks = $model->getBanksWithCards($cardType);
             $activeFilter = $cardType;
         } else {
-            $allBanks = $model->getBanksWithCards();
+            $allBanks = $model->getBanksWithCards(); // No filter or invalid type, get all
             $activeFilter = null;
         }
         

@@ -238,6 +238,32 @@ class CardModel {
         $stmt->close();
         return $cards;
     }
+
+    public function getDistinctCardTypes($bankId = null) {
+        $query = "SELECT DISTINCT type FROM cards WHERE type IS NOT NULL AND type != ''";
+        if ($bankId !== null) {
+            $query .= " AND bank_id = ?";
+        }
+        $query .= " ORDER BY type ASC";
+
+        $stmt = $this->db->prepare($query);
+
+        if ($bankId !== null) {
+            $stmt->bind_param('i', $bankId);
+        }
+
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        $types = [];
+        if ($result) {
+            while ($row = $result->fetch_assoc()) {
+                $types[] = $row['type'];
+            }
+        }
+        $stmt->close();
+        return $types;
+    }
     
 }
 ?>
