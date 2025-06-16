@@ -175,6 +175,11 @@ switch ($path) {
         $controller = new ReportController();
         $controller->rejectCard();
         break;
+
+    case 'report/download': // New route for downloading reports
+        $controller = new ReportController();
+        $controller->downloadWithdrawalReport();
+        break;
         
     case 'bank':
         $controller = new BankController();

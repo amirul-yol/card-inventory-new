@@ -359,14 +359,25 @@ class ReportModel {
 
     public function getTransactionsForReport($reportId)
     {
-        $query = "SELECT t.id, t.card_id, t.quantity AS transaction_quantity, t.transaction_date, t.remarks, c.name AS card_name, c.quantity AS card_balance
-                FROM transactions t
-                LEFT JOIN cards c ON t.card_id = c.id
-                WHERE t.report_id = ? AND t.transaction_type = 'withdraw'";
+        $query = "SELECT 
+                t.id, 
+                t.card_id, 
+                t.quantity AS transaction_quantity, 
+                t.transaction_date, 
+                t.remarks, 
+                c.name AS card_name, 
+                c.quantity AS card_balance,
+                COALESCE(SUM(r.quantity), 0) AS rejected_quantity
+            FROM transactions t
+            LEFT JOIN cards c ON t.card_id = c.id
+            LEFT JOIN rejections r ON t.id = r.transaction_id
+            WHERE t.report_id = ? AND t.transaction_type = 'withdraw'
+            GROUP BY t.id, t.card_id, t.quantity, t.transaction_date, t.remarks, c.name, c.quantity";
         
         $stmt = $this->db->prepare($query);
         if (!$stmt) {
-            die("Failed to prepare statement: " . $this->db->error);
+            error_log("Failed to prepare statement: " . $this->db->error);
+            return []; // Return empty array on failure
         }
         $stmt->bind_param("i", $reportId);
         $stmt->execute();

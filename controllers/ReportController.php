@@ -6,9 +6,11 @@ require_once 'controllers/AuthController.php';
 
 class ReportController {
     private $authController;
+    private $reportModel;
     
     public function __construct() {
         $this->authController = new AuthController();
+        $this->reportModel = new ReportModel();
     }
     
     public function index() {
@@ -521,6 +523,71 @@ class ReportController {
         }
 
         include 'views/report/reject_card.php';
+    }
+
+    public function downloadWithdrawalReport()
+    {
+        if (!isset($_GET['report_id'])) {
+            // Or handle error more gracefully, e.g., redirect with message
+            die('Report ID is required.');
+        }
+        $reportId = intval($_GET['report_id']);
+
+        // Instantiate ReportModel if not already available (e.g. via constructor injection)
+        // For simplicity here, assuming it's instantiated as needed or $this->reportModel is set.
+        // If $this->reportModel is not set up, you'd do: $this->reportModel = new ReportModel();
+        // Ensure ReportModel is required at the top of the controller if not already.
+
+        $report = $this->reportModel->getReportById($reportId);
+        if (!$report) {
+            die('Report not found.');
+        }
+
+        $bank = $this->reportModel->getBankById($report['bank_id']);
+        if (!$bank) {
+            die('Bank not found for this report.');
+        }
+
+        // Format report_date (YYYY-MM-DD) to ddmmyyyy for the filename
+        $reportDateFormatted = DateTime::createFromFormat('Y-m-d', $report['report_date'])->format('dmY');
+        $bankName = preg_replace('/[^a-zA-Z0-9_\-]/', '_', $bank['name']); // Sanitize bank name for filename
+        $filename = "Withdrawal_Report_for_" . $bankName . "_" . $reportDateFormatted . ".csv";
+
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+
+        $output = fopen('php://output', 'w');
+
+        // CSV Headers
+        $headers = ['Card Name', 'Withdraw Quantity', 'Reject Quantity', 'Card Balance', 'Report Date', 'Report Status'];
+        fputcsv($output, $headers);
+
+        // Fetch transactions including rejected quantities
+        $transactions = $this->reportModel->getTransactionsForReport($reportId);
+
+        // Report Date and Status for all rows in this CSV
+        $csvReportDate = $report['report_date']; // Use original YYYY-MM-DD or format as needed for display
+        $csvReportStatus = $report['status'];
+
+        if (empty($transactions)) {
+            // Optional: Write a row indicating no transactions if that's preferred over an empty data section
+            // fputcsv($output, ['No transactions found for this report.', '', '', '', $csvReportDate, $csvReportStatus]);
+        } else {
+            foreach ($transactions as $transaction) {
+                $row = [
+                    $transaction['card_name'],
+                    $transaction['transaction_quantity'],
+                    $transaction['rejected_quantity'], // This now comes from the modified model method
+                    $transaction['card_balance'],
+                    $csvReportDate,
+                    $csvReportStatus
+                ];
+                fputcsv($output, $row);
+            }
+        }
+
+        fclose($output);
+        exit;
     }
 }
 ?>
