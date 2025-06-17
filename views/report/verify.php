@@ -29,11 +29,16 @@ include 'views/includes/sidebar.php';
 ?>
 
 <div class="content">
-    <?php if ($isBank): ?>
-        <h1>Withdrawal Report</h1>
-    <?php else: ?>
-        <h1>Verify Withdrawal Report</h1>
-    <?php endif; ?>
+    <div class="report-header">
+        <?php if ($isBank): ?>
+            <h1>Withdrawal Report</h1>
+        <?php else: ?>
+            <h1>Verify Withdrawal Report</h1>
+        <?php endif; ?>
+        <div class="report-date">
+            <strong>Report Date:</strong> <?= htmlspecialchars($report['report_date'] ?? 'N/A'); ?>
+        </div>
+    </div>
 
     <form method="POST" action="index.php?path=report/verifyWithdrawReport">
         <input type="hidden" name="bank_id" value="<?php echo htmlspecialchars($bankId); ?>">
@@ -124,6 +129,19 @@ include 'views/includes/sidebar.php';
     .btn:disabled {
         opacity: 0.6;
         cursor: not-allowed;
+    }
+    .report-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+    }
+    .report-date {
+        background-color: #f8f9fa;
+        padding: 8px 15px;
+        border-radius: 4px;
+        border-left: 4px solid #007bff;
+        font-size: 16px;
     }
 </style>
 
