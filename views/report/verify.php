@@ -68,36 +68,43 @@ include 'views/includes/sidebar.php';
                 </tr>
             </thead>
             <tbody>
-                <?php if (!empty($transactions)): ?>
-                    <?php foreach ($transactions as $transaction): ?>
-                        <tr>
-                            <td><?= htmlspecialchars($transaction['card_name'] ?? 'Unknown', ENT_QUOTES, 'UTF-8'); ?></td>
-                            <td><?= htmlspecialchars($transaction['transaction_quantity']); ?></td>
+                <?php 
+                // Initialize total variables
+                $totalWithdrawQuantity = 0;
+                $totalRejectQuantity = 0;
+                $totalTotalWithdrawal = 0;
+                $totalCardBalance = 0;
+
+                if (!empty($transactions)): ?>
+                    <?php foreach ($transactions as $transaction): 
+                        // Calculate reject quantity and total withdrawal for this transaction
+                        $rejectedAmount = $reportModel->getRejectedAmount($transaction['id']) ?? 0;
+                        $totalWithdrawal = $transaction['transaction_quantity'] + $rejectedAmount;
+
+                        // Add to totals
+                        $totalWithdrawQuantity += $transaction['transaction_quantity'];
+                        $totalRejectQuantity += $rejectedAmount;
+                        $totalTotalWithdrawal += $totalWithdrawal;
+                        $totalCardBalance += $transaction['card_balance'];
+                    ?>
+                    <tr>
+                        <td><?= htmlspecialchars($transaction['card_name'] ?? 'Unknown', ENT_QUOTES, 'UTF-8'); ?></td>
+                        <td><?= htmlspecialchars($transaction['transaction_quantity']); ?></td>
+                        <td><?= htmlspecialchars($rejectedAmount); ?></td>
+                        <td><?= htmlspecialchars($totalWithdrawal); ?></td>
+                        <td><?= htmlspecialchars(number_format($transaction['card_balance'])); ?></td>
+                        <?php if (!($authController->isBank() && isset($_SESSION['bank_id']))): ?>
                             <td>
-                                <?php 
-                                    $rejectedAmount = $reportModel->getRejectedAmount($transaction['id']);
-                                    echo htmlspecialchars($rejectedAmount ?? '0');
-                                ?>
+                                <?php if ($canVerify): ?>
+                                    <a href="index.php?path=report/rejectCard&transaction_id=<?= $transaction['id']; ?>&bank_id=<?= $bankId ?>&report_id=<?= $reportId ?>" class="btn btn-danger">
+                                        Reject
+                                    </a>
+                                <?php else: ?>
+                                    <button type="button" class="btn btn-danger" disabled>Reject</button>
+                                <?php endif; ?>
                             </td>
-                            <td>
-                                <?php
-                                    $totalWithdrawal = $transaction['transaction_quantity'] + ($rejectedAmount ?? 0);
-                                    echo htmlspecialchars($totalWithdrawal);
-                                ?>
-                            </td>
-                            <td><?php echo htmlspecialchars(number_format($transaction['card_balance'])); ?></td>
-                            <?php if (!($authController->isBank() && isset($_SESSION['bank_id']))): ?>
-                                <td>
-                                    <?php if ($canVerify): ?>
-                                        <a href="index.php?path=report/rejectCard&transaction_id=<?= $transaction['id']; ?>&bank_id=<?= $bankId ?>&report_id=<?= $reportId ?>" class="btn btn-danger">
-                                            Reject
-                                        </a>
-                                    <?php else: ?>
-                                        <button type="button" class="btn btn-danger" disabled>Reject</button>
-                                    <?php endif; ?>
-                                </td>
-                            <?php endif; ?>
-                        </tr>
+                        <?php endif; ?>
+                    </tr>
                     <?php endforeach; ?>
                 <?php else: ?>
                     <tr>
@@ -105,7 +112,17 @@ include 'views/includes/sidebar.php';
                     </tr>
                 <?php endif; ?>
             </tbody>
+            <tfoot >
+                <tr style="background-color:rgb(88, 166, 218); color:#f2f2f2; font-weight: bold;">
+                    <td>Total</td>
+                    <td><?= htmlspecialchars($totalWithdrawQuantity); ?></td>
+                    <td><?= htmlspecialchars($totalRejectQuantity); ?></td>
+                    <td><?= htmlspecialchars($totalTotalWithdrawal); ?></td>
+                    
+                </tr>
+            </tfoot>
         </table>
+
 
         <?php if (!($authController->isBank() && isset($_SESSION['bank_id']))): ?>
         <button type="submit" name="verify_report" class="btn btn-primary" <?= $canVerify ? '' : 'disabled' ?>>
