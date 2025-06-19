@@ -60,6 +60,7 @@ include 'views/includes/sidebar.php';
                     <th>Card Name</th>
                     <th>Withdraw Quantity</th>
                     <th>Reject Quantity</th>
+                    <th>Total Withdrawal</th>
                     <th>Card Balance</th>
                     <?php if (!($authController->isBank() && isset($_SESSION['bank_id']))): ?>
                         <th>Action</th>
@@ -76,6 +77,12 @@ include 'views/includes/sidebar.php';
                                 <?php 
                                     $rejectedAmount = $reportModel->getRejectedAmount($transaction['id']);
                                     echo htmlspecialchars($rejectedAmount ?? '0');
+                                ?>
+                            </td>
+                            <td>
+                                <?php
+                                    $totalWithdrawal = $transaction['transaction_quantity'] + ($rejectedAmount ?? 0);
+                                    echo htmlspecialchars($totalWithdrawal);
                                 ?>
                             </td>
                             <td><?php echo htmlspecialchars(number_format($transaction['card_balance'])); ?></td>
