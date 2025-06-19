@@ -105,7 +105,19 @@ class CardModel {
     }
 
     public function getTransactionsByCardId($cardId) {
-        $sql = "SELECT * FROM transactions WHERE card_id = ? ORDER BY transaction_date ASC";
+        $sql = " 
+            SELECT 
+                t.id,
+                t.transaction_date,
+                t.remarks,
+                CASE WHEN t.transaction_type = 'deposit' THEN t.quantity ELSE 0 END AS quantity_in,
+                CASE WHEN t.transaction_type = 'withdraw' THEN t.quantity ELSE 0 END AS quantity_out,
+                COALESCE(r.quantity, 0) AS reject_quantity
+            FROM transactions t
+            LEFT JOIN rejections r ON t.id = r.transaction_id
+            WHERE t.card_id = ?
+            ORDER BY t.transaction_date ASC";
+            
         $stmt = $this->db->prepare($sql);
         $stmt->bind_param("i", $cardId);
         $stmt->execute();
