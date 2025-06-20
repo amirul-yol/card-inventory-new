@@ -405,5 +405,40 @@ class ReportModel {
         return $stmt->execute([$newQuantity, $transactionId]);
     }
 
+    public function getRejectedDetails($transactionId) {
+        $sql = "
+            SELECT 
+                reason,
+                SUM(quantity) AS total_quantity
+            FROM rejections
+            WHERE transaction_id = ?
+            GROUP BY reason";
+        
+        $stmt = $this->db->prepare($sql);
+        $stmt->bind_param("i", $transactionId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        // Initialize default reject quantities
+        $details = [
+            'quality' => 0,
+            'system' => 0
+        ];
+
+        while ($row = $result->fetch_assoc()) {
+            // Map database values to expected keys
+            if ($row['reason'] === 'Quality Error') {
+                $details['quality'] = (int)$row['total_quantity'];
+            } elseif ($row['reason'] === 'System Error') {
+                $details['system'] = (int)$row['total_quantity'];
+            }
+        }
+
+        return $details;
+    }
+
+
+
+
 }
 ?>

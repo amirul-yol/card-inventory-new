@@ -584,5 +584,16 @@ class ReportController {
         fclose($output);
         exit;
     }
+
+    public function viewTransactions() {
+    $transactions = $this->transactionModel->getTransactionsByCardId($cardId);
+
+    foreach ($transactions as &$transaction) {
+        $transaction['rejection_details'] = $this->reportModel->getRejectedDetails($transaction['id']);
+    }
+
+    require 'views/report/verify.php';
+}
+
 }
 ?>

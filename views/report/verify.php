@@ -78,7 +78,8 @@ include 'views/includes/sidebar.php';
                 if (!empty($transactions)): ?>
                     <?php foreach ($transactions as $transaction): 
                         // Calculate reject quantity and total withdrawal for this transaction
-                        $rejectedAmount = $reportModel->getRejectedAmount($transaction['id']) ?? 0;
+                        $rejectedDetails = $reportModel->getRejectedDetails($transaction['id']); // Fetch detailed rejected info
+                        $rejectedAmount = array_sum($rejectedDetails);
                         $totalWithdrawal = $transaction['transaction_quantity'] + $rejectedAmount;
 
                         // Add to totals
@@ -86,11 +87,17 @@ include 'views/includes/sidebar.php';
                         $totalRejectQuantity += $rejectedAmount;
                         $totalTotalWithdrawal += $totalWithdrawal;
                         $totalCardBalance += $transaction['card_balance'];
+
+                        // Prepare reject details for hover tooltip
+                        $rejectTooltip = htmlspecialchars(json_encode($rejectedDetails), ENT_QUOTES, 'UTF-8');
                     ?>
                     <tr>
                         <td><?= htmlspecialchars($transaction['card_name'] ?? 'Unknown', ENT_QUOTES, 'UTF-8'); ?></td>
                         <td><?= htmlspecialchars($transaction['transaction_quantity']); ?></td>
-                        <td><?= htmlspecialchars($rejectedAmount); ?></td>
+                        <td class="reject-quantity" data-details="<?= htmlspecialchars(json_encode($rejectedDetails), ENT_QUOTES, 'UTF-8'); ?>">
+                            <?= htmlspecialchars($rejectedAmount); ?>
+                        </td>
+
                         <td><?= htmlspecialchars($totalWithdrawal); ?></td>
                         <td><?= htmlspecialchars(number_format($transaction['card_balance'])); ?></td>
                         <?php if (!($authController->isBank() && isset($_SESSION['bank_id']))): ?>
@@ -112,6 +119,7 @@ include 'views/includes/sidebar.php';
                     </tr>
                 <?php endif; ?>
             </tbody>
+
             <tfoot >
                 <tr style="background-color:rgb(88, 166, 218); color:#f2f2f2; font-weight: bold;">
                     <td>Total</td>
@@ -137,6 +145,44 @@ include 'views/includes/sidebar.php';
         <?php endif; ?>
     </form>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const rows = document.querySelectorAll('.reject-quantity');
+        const messageBox = document.createElement('div');
+        messageBox.style.position = 'absolute';
+        messageBox.style.padding = '10px';
+        messageBox.style.backgroundColor = '#333';
+        messageBox.style.color = '#fff';
+        messageBox.style.borderRadius = '5px';
+        messageBox.style.boxShadow = '0 2px 5px rgba(0, 0, 0, 0.3)';
+        messageBox.style.display = 'none';
+        messageBox.style.zIndex = '1000';
+        document.body.appendChild(messageBox);
+
+        rows.forEach(row => {
+            row.addEventListener('mouseover', function (e) {
+                const details = JSON.parse(this.dataset.details);
+                messageBox.innerHTML = `
+                    <strong>Quality Error:</strong> ${details.quality || 0}<br>
+                    <strong>System Error:</strong> ${details.system || 0}
+                `;
+                messageBox.style.left = `${e.pageX + 10}px`;
+                messageBox.style.top = `${e.pageY + 10}px`;
+                messageBox.style.display = 'block';
+            });
+
+            row.addEventListener('mousemove', function (e) {
+                messageBox.style.left = `${e.pageX + 10}px`;
+                messageBox.style.top = `${e.pageY + 10}px`;
+            });
+
+            row.addEventListener('mouseout', function () {
+                messageBox.style.display = 'none';
+            });
+        });
+    });
+</script>
 
 <style>
     .alert {
@@ -167,6 +213,50 @@ include 'views/includes/sidebar.php';
         border-left: 4px solid #007bff;
         font-size: 16px;
     }
+
+    td[title] {
+        position: relative;
+        cursor: help;
+    }
+
+    td[title]:hover::after {
+        content: attr(title);
+        position: absolute;
+        left: 50%;
+        bottom: 120%;
+        transform: translateX(-50%);
+        background-color: #333;
+        color: #fff;
+        padding: 5px 10px;
+        border-radius: 5px;
+        white-space: pre; /* Preserves line breaks in tooltip */
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        z-index: 10;
+        display: block;
+    }
+
+    td[title]:hover::before {
+        content: '';
+        position: absolute;
+        left: 50%;
+        bottom: 110%;
+        transform: translateX(-50%);
+        border: 5px solid transparent;
+        border-top-color: #333;
+        z-index: 10;
+        display: block;
+    }
+
+    .reject-quantity {
+            position: relative;
+            cursor: pointer;
+            color: #3498db;
+        }
+
+    .reject-quantity:hover {
+        text-decoration: underline;
+    }
+
 </style>
 
 <?php include 'views/includes/footer.php'; ?>
