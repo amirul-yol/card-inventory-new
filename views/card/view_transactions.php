@@ -9,20 +9,28 @@ include 'views/includes/sidebar.php'; ?>
         <thead>
             <tr>
                 <th>Date</th>
-                <th>Deposit (In)</th>
-                <th>Withdrawn (Out)</th>
-                <th>Rejected </th>
-                <th>Total Transaction</th>
+                <th>Quantity In</th>
+                <th>Quantity Out</th>
+                <th>Rejected</th>
+                <th>Total Transactions</th>
+                <!-- <th>Remarks</th> -->
+                <!-- <th>Action</th> -->
             </tr>
         </thead>
         <tbody>
             <?php foreach ($transactions as $transaction): ?>
+                <?php 
+                    $reject_total = $transaction['reject_quality'] + $transaction['reject_system'];
+                    $row_total = $transaction['quantity_in'] + $transaction['quantity_out'] + $reject_total;
+                ?>
                 <tr>
                     <td><?= $transaction['transaction_date']; ?></td>
                     <td><?= $transaction['quantity_in']; ?></td>
                     <td><?= $transaction['quantity_out']; ?></td>
-                    <td><?= $transaction['reject_quantity']; ?></td>
-                    <td><?= $transaction['quantity_in'] + $transaction['quantity_out'] + $transaction['reject_quantity']; ?></td>
+                    <td><?= $reject_total; ?></td>
+                    <td><?= $row_total; ?></td>
+
+                    <!-- <td><?= $transaction['remarks']; ?></td> -->
                     <!-- <td>
                         <a href="?path=card/editTransactionForm&transaction_id=<?= $transaction['id']; ?>" class="btn">Edit</a>
                     </td> -->
