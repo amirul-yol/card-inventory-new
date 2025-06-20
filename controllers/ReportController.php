@@ -533,11 +533,6 @@ class ReportController {
         }
         $reportId = intval($_GET['report_id']);
 
-        // Instantiate ReportModel if not already available (e.g. via constructor injection)
-        // For simplicity here, assuming it's instantiated as needed or $this->reportModel is set.
-        // If $this->reportModel is not set up, you'd do: $this->reportModel = new ReportModel();
-        // Ensure ReportModel is required at the top of the controller if not already.
-
         $report = $this->reportModel->getReportById($reportId);
         if (!$report) {
             die('Report not found.');

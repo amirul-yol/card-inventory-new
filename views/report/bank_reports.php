@@ -91,59 +91,83 @@ foreach ($reports as $report) {
     <div class="action-buttons">
         <?php if ($isLO && !$reportExistsForToday): ?>
             <a href="index.php?path=report/withdrawCard&bank_id=<?= $bank['bank_id']; ?>" class="btn withdraw-btn">Withdraw Card</a>
-        <?php else: ?>
-            <div class="tooltip">
+        <?php elseif ($isLO && $reportExistsForToday): ?>
+            <!-- <div class="tooltip">
                 <a class="btn withdraw-btn disabled">Withdraw Card</a>
                 <span class="tooltip-text">
-                    <?php if ($reportExistsForToday): ?>
+                    <?php if ($reportExistsForToday): ?> -->
                         A withdrawal report already exists for today
-                    <?php else: ?>
+                    <!-- <?php else: ?>
                         Only Logistics Officers can withdraw cards
                     <?php endif; ?>
-                </span>
+                </span> -->
             </div>
         <?php endif; ?>
     </div>
 
     <!-- Existing Reports Table -->
     <br />
-    <h3>Existing Reports</h3>
-    <?php if (!empty($reports)): ?>
-        <table class="report-table">
-            <thead>
-                <tr>
-                    <th>Date</th>
-                    <th>Status</th>
-                    <!-- <th>Details</th> -->
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($reports as $report): ?>
-                    <tr>
-                        <td><?= htmlspecialchars($report['report_date'] ?? 'N/A'); ?></td>
-                        <td><?= htmlspecialchars($report['status'] ?? 'N/A'); ?></td>
-                        <!-- <td><?= htmlspecialchars($report['details'] ?? 'No Details Available'); ?></td> -->
+    <h3 style="display: inline-block;">Existing Reports</h3>
+    <div style="float: right;">
+        <label for="month_filter">Filter by Month:</label>
+        <select name="month" id="month_filter">
+            <option value="">All Months</option>
+            <?php
+            // Generate dropdown options for all months
+            for ($m = 1; $m <= 12; $m++) {
+                $monthName = date("F", mktime(0, 0, 0, $m, 1));
+                echo "<option value=\"$m\">$monthName</option>";
+            }
+            ?>
+        </select>
+        <button id="applyFilter" class="btn btn-filter">Apply</button>
+    </div>
 
-                        <td>
-                            <?php if ($isPO): ?>
-                                <a href="index.php?path=report/verify&report_id=<?= $report['id']; ?>&bank_id=<?= $bank['bank_id']; ?>" class="btn btn-action">
-                                    <?= $report['status'] === 'Verified' ? 'View' : 'Verify' ?>
-                                </a>
-                            <?php else: ?>
-                                <a href="index.php?path=report/verify&report_id=<?= $report['id']; ?>&bank_id=<?= $bank['bank_id']; ?>" class="btn btn-action">
-                                    View
-                                </a>
-                            <?php endif; ?>
-                            <a href="index.php?path=report/download&report_id=<?= $report['id']; ?>" class="btn btn-action">Generate Report</a>
-                        </td>
-                    </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
-    <?php else: ?>
-        <p>No reports available for this bank.</p>
-    <?php endif; ?>
-</div>
+    <table class="report-table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="reportTableBody">
+            <?php foreach ($reports as $report): ?>
+                <tr data-month="<?= date('n', strtotime($report['report_date'])); ?>">
+                    <td><?= htmlspecialchars($report['report_date'] ?? 'N/A'); ?></td>
+                    <td><?= htmlspecialchars($report['status'] ?? 'N/A'); ?></td>
+                    <td>
+                        <?php if ($isPO): ?>
+                            <a href="index.php?path=report/verify&report_id=<?= $report['id']; ?>&bank_id=<?= $bank['bank_id']; ?>" class="btn btn-action">
+                                <?= $report['status'] === 'Verified' ? 'View' : 'Verify' ?>
+                            </a>
+                        <?php else: ?>
+                            <a href="index.php?path=report/verify&report_id=<?= $report['id']; ?>&bank_id=<?= $bank['bank_id']; ?>" class="btn btn-action">
+                                View
+                            </a>
+                        <?php endif; ?>
+                        <a href="index.php?path=report/download&report_id=<?= $report['id']; ?>" class="btn btn-action">Generate Report</a>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
+
+    <script>
+        document.getElementById('applyFilter').addEventListener('click', function () {
+            const selectedMonth = document.getElementById('month_filter').value;
+            const rows = document.querySelectorAll('#reportTableBody tr');
+
+            rows.forEach(row => {
+                const rowMonth = row.getAttribute('data-month');
+                if (selectedMonth === "" || rowMonth === selectedMonth) {
+                    row.style.display = ""; // Show the row
+                } else {
+                    row.style.display = "none"; // Hide the row
+                }
+            });
+        });
+    </script>
+    </div>
 
 <?php include 'views/includes/footer.php'; ?>
