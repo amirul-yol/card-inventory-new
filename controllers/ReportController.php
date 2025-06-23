@@ -540,50 +540,75 @@ class ReportController {
             die('Report not found.');
         }
 
-        $bank = $this->reportModel->getBankById($report['bank_id']);
-        if (!$bank) {
-            die('Bank not found for this report.');
+        // $bank = $this->reportModel->getBankById($report['bank_id']);
+        // if (!$bank) {
+        //     die('Bank not found for this report.');
+        // }
+
+        // // Format report_date (YYYY-MM-DD) to ddmmyyyy for the filename
+        // $reportDateFormatted = DateTime::createFromFormat('Y-m-d', $report['report_date'])->format('dmY');
+        // $bankName = preg_replace('/[^a-zA-Z0-9_\-]/', '_', $bank['name']); // Sanitize bank name for filename
+        // $filename = "Withdrawal_Report_for_" . $bankName . "_" . $reportDateFormatted . ".csv";
+
+        // header('Content-Type: text/csv; charset=utf-8');
+        // header('Content-Disposition: attachment; filename="' . $filename . '"');
+
+        // $output = fopen('php://output', 'w');
+
+        // // CSV Headers
+        // $headers = ['Card Name', 'Withdraw Quantity', 'Reject Quantity', 'Card Balance', 'Report Date', 'Report Status'];
+        // fputcsv($output, $headers);
+
+        // // Fetch transactions including rejected quantities
+        // $transactions = $this->reportModel->getTransactionsForReport($reportId);
+
+        // // Report Date and Status for all rows in this CSV
+        // $csvReportDate = $report['report_date']; // Use original YYYY-MM-DD or format as needed for display
+        // $csvReportStatus = $report['status'];
+
+        // if (empty($transactions)) {
+        //     // Optional: Write a row indicating no transactions if that's preferred over an empty data section
+        //     // fputcsv($output, ['No transactions found for this report.', '', '', '', $csvReportDate, $csvReportStatus]);
+        // } else {
+        //     foreach ($transactions as $transaction) {
+        //         $row = [
+        //             $transaction['card_name'],
+        //             $transaction['transaction_quantity'],
+        //             $transaction['rejected_quantity'], // This now comes from the modified model method
+        //             $transaction['card_balance'],
+        //             $csvReportDate,
+        //             $csvReportStatus
+        //         ];
+        //         fputcsv($output, $row);
+        //     }
+        // }
+
+        // fclose($output);
+        // exit;
+
+        // Temporary file path (update this to match your directory and file naming convention)
+        $existingFilePath = __DIR__ . '/../reports/existing/ASCC DAILY CARD STOCK RPT(2025).xls';
+
+        if (!file_exists($existingFilePath)) {
+            die('The requested report file does not exist.');
         }
 
-        // Format report_date (YYYY-MM-DD) to ddmmyyyy for the filename
-        $reportDateFormatted = DateTime::createFromFormat('Y-m-d', $report['report_date'])->format('dmY');
-        $bankName = preg_replace('/[^a-zA-Z0-9_\-]/', '_', $bank['name']); // Sanitize bank name for filename
-        $filename = "Withdrawal_Report_for_" . $bankName . "_" . $reportDateFormatted . ".csv";
-
-        header('Content-Type: text/csv; charset=utf-8');
-        header('Content-Disposition: attachment; filename="' . $filename . '"');
-
-        $output = fopen('php://output', 'w');
-
-        // CSV Headers
-        $headers = ['Card Name', 'Withdraw Quantity', 'Reject Quantity', 'Card Balance', 'Report Date', 'Report Status'];
-        fputcsv($output, $headers);
-
-        // Fetch transactions including rejected quantities
-        $transactions = $this->reportModel->getTransactionsForReport($reportId);
-
-        // Report Date and Status for all rows in this CSV
-        $csvReportDate = $report['report_date']; // Use original YYYY-MM-DD or format as needed for display
-        $csvReportStatus = $report['status'];
-
-        if (empty($transactions)) {
-            // Optional: Write a row indicating no transactions if that's preferred over an empty data section
-            // fputcsv($output, ['No transactions found for this report.', '', '', '', $csvReportDate, $csvReportStatus]);
-        } else {
-            foreach ($transactions as $transaction) {
-                $row = [
-                    $transaction['card_name'],
-                    $transaction['transaction_quantity'],
-                    $transaction['rejected_quantity'], // This now comes from the modified model method
-                    $transaction['card_balance'],
-                    $csvReportDate,
-                    $csvReportStatus
-                ];
-                fputcsv($output, $row);
-            }
+        // Disable output buffering to prevent content corruption
+        if (ob_get_length()) {
+            ob_end_clean();
         }
 
-        fclose($output);
+        // Send headers to prompt file download
+        header('Content-Type: application/vnd.ms-excel');
+        header('Content-Disposition: attachment; filename="ASCC DAILY CARD STOCK RPT(2025).xls"');
+        header('Content-Length: ' . filesize($existingFilePath));
+        header('Pragma: public');
+        header('Expires: 0');
+        header('Cache-Control: must-revalidate');
+        header('Content-Transfer-Encoding: binary');
+
+        // Serve the file
+        readfile($existingFilePath);
         exit;
     }
 
