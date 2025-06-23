@@ -92,20 +92,11 @@ foreach ($reports as $report) {
         <?php if ($isLO && !$reportExistsForToday): ?>
             <a href="index.php?path=report/withdrawCard&bank_id=<?= $bank['bank_id']; ?>" class="btn withdraw-btn">Withdraw Card</a>
         <?php elseif ($isLO && $reportExistsForToday): ?>
-            <!-- <div class="tooltip">
-                <a class="btn withdraw-btn disabled">Withdraw Card</a>
-                <span class="tooltip-text">
-                    <?php if ($reportExistsForToday): ?> -->
-                        A withdrawal report already exists for today
-                    <!-- <?php else: ?>
-                        Only Logistics Officers can withdraw cards
-                    <?php endif; ?>
-                </span> -->
-            </div>
+            A withdrawal report already exists for today
         <?php endif; ?>
     </div>
 
-    <!-- Existing Reports Table -->
+    <!-- Filters -->
     <br />
     <h3 style="display: inline-block;">Existing Reports</h3>
     <div style="float: right;">
@@ -113,13 +104,20 @@ foreach ($reports as $report) {
         <select name="month" id="month_filter">
             <option value="">All Months</option>
             <?php
-            // Generate dropdown options for all months
             for ($m = 1; $m <= 12; $m++) {
                 $monthName = date("F", mktime(0, 0, 0, $m, 1));
                 echo "<option value=\"$m\">$monthName</option>";
             }
             ?>
         </select>
+
+        <label for="rejection_filter">Rejected Cards:</label>
+        <select name="rejection" id="rejection_filter">
+            <option value="">All Reports</option>
+            <option value="yes">With Rejections</option>
+            <option value="no">Without Rejections</option>
+        </select>
+
         <button id="applyFilter" class="btn btn-filter">Apply</button>
     </div>
 
@@ -133,7 +131,13 @@ foreach ($reports as $report) {
         </thead>
         <tbody id="reportTableBody">
             <?php foreach ($reports as $report): ?>
-                <tr data-month="<?= date('n', strtotime($report['report_date'])); ?>">
+                <?php
+                // Check if the report has rejections
+                $hasRejections = !empty($rejections[$report['id']]);
+                ?>
+                <tr 
+                    data-month="<?= date('n', strtotime($report['report_date'])); ?>" 
+                    data-rejection="<?= $hasRejections ? 'yes' : 'no'; ?>">
                     <td><?= htmlspecialchars($report['report_date'] ?? 'N/A'); ?></td>
                     <td><?= htmlspecialchars($report['status'] ?? 'N/A'); ?></td>
                     <td>
@@ -151,23 +155,27 @@ foreach ($reports as $report) {
                 </tr>
             <?php endforeach; ?>
         </tbody>
+
+
     </table>
 
     <script>
         document.getElementById('applyFilter').addEventListener('click', function () {
             const selectedMonth = document.getElementById('month_filter').value;
+            const selectedRejection = document.getElementById('rejection_filter').value;
             const rows = document.querySelectorAll('#reportTableBody tr');
 
             rows.forEach(row => {
                 const rowMonth = row.getAttribute('data-month');
-                if (selectedMonth === "" || rowMonth === selectedMonth) {
-                    row.style.display = ""; // Show the row
-                } else {
-                    row.style.display = "none"; // Hide the row
-                }
+                const rowRejection = row.getAttribute('data-rejection');
+                const showByMonth = selectedMonth === "" || rowMonth === selectedMonth;
+                const showByRejection = selectedRejection === "" || rowRejection === selectedRejection;
+
+                row.style.display = showByMonth && showByRejection ? "" : "none"; // Show or hide the row
             });
         });
+
     </script>
-    </div>
+</div>
 
 <?php include 'views/includes/footer.php'; ?>

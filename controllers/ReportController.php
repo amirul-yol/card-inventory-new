@@ -51,31 +51,33 @@ class ReportController {
 
 
     public function bankReports() {
-    
         // Validate and sanitize `id`
         $bankId = isset($_GET['bank_id']) ? (int) $_GET['bank_id'] : null;
-    
+
         if (!$bankId) {
             die("Bank ID is missing or invalid.");
         }
-        
+
         // Check if the user can access this bank
         if (!$this->authController->canAccessBank($bankId)) {
             die("You do not have permission to view reports for this bank.");
         }
-    
+
         $reportModel = new ReportModel();
         $bank = $reportModel->getBankById($bankId);
-    
+
         if (!$bank) {
             die("Bank not found.");
         }
-    
+
         $reports = $reportModel->getReportsByBank($bankId);
-    
+
+        // Fetch rejections by report
+        $rejections = $reportModel->getRejectionsByReports(array_column($reports, 'id'));
+
         include 'views/report/bank_reports.php';
     }
-    
+
     public function withdrawCard() {
         $cardId = $_GET['card_id'] ?? null;
         $bankId = $_GET['bank_id'] ?? null;

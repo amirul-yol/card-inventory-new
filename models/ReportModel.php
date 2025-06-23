@@ -40,6 +40,33 @@ class ReportModel {
         return $result->fetch_all(MYSQLI_ASSOC);
     }
 
+    public function getRejectionsByReports($reportIds) {
+        if (empty($reportIds)) {
+            return [];
+        }
+
+        $placeholders = implode(',', array_fill(0, count($reportIds), '?'));
+        $query = "
+            SELECT t.report_id, SUM(rej.quantity) AS total_rejected
+            FROM rejections rej
+            INNER JOIN transactions t ON rej.transaction_id = t.id
+            WHERE t.report_id IN ($placeholders)
+            GROUP BY t.report_id
+        ";
+
+        $stmt = $this->db->prepare($query);
+        $stmt->bind_param(str_repeat('i', count($reportIds)), ...$reportIds);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        $rejections = [];
+        while ($row = $result->fetch_assoc()) {
+            $rejections[$row['report_id']] = $row['total_rejected'];
+        }
+
+        return $rejections;
+    }
+
     public function withdrawCard($cardId, $bankId, $quantity, $withdrawType, $transactionDate) {
         $query = "INSERT INTO transactions (card_id, bank_id, transaction_date, transaction_type, quantity, verified, remarks, created_at)
                   VALUES (?, ?, ?, 'withdraw', ?, NULL, ?, NOW())";
