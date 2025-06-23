@@ -4,7 +4,11 @@ include 'views/includes/sidebar.php'; ?>
 <div class="content">
     <h1>
         Transactions for <?= htmlspecialchars($card['name']); ?>
-        <a href="?path=card/depositCardForm&card_id=<?= $card['id']; ?>" class="btn">Deposit Card</a>
+        <div class="action-buttons">
+            <?php if (!$isBank): ?>
+                <a href="?path=card/depositCardForm&card_id=<?= $card['id']; ?>" class="btn">Deposit Card</a>
+            <?php endif; ?>
+        </div>
     </h1>
 
     <div style="float: right; margin-bottom: 10px;">
