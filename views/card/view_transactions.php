@@ -30,6 +30,7 @@ include 'views/includes/sidebar.php'; ?>
                 <th>Quantity Out</th>
                 <th>Rejected</th>
                 <th>Total Transactions</th>
+                <th>Remarks</th>
             </tr>
         </thead>
         <tbody id="transactionTableBody">
@@ -44,6 +45,7 @@ include 'views/includes/sidebar.php'; ?>
                     <td><?= $transaction['quantity_out']; ?></td>
                     <td><?= $reject_total; ?></td>
                     <td><?= $row_total; ?></td>
+                    <td><?= $transaction['transaction_type']; ?></td>
                 </tr>
             <?php endforeach; ?>
         </tbody>

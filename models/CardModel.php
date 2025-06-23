@@ -109,7 +109,7 @@ class CardModel {
             SELECT 
                 t.id,
                 t.transaction_date,
-                t.remarks,
+                t.transaction_type,
                 CASE WHEN t.transaction_type = 'deposit' THEN t.quantity ELSE 0 END AS quantity_in,
                 CASE WHEN t.transaction_type = 'withdraw' THEN t.quantity ELSE 0 END AS quantity_out,
                 COALESCE(SUM(CASE WHEN r.reason = 'Quality Error' THEN r.quantity ELSE 0 END), 0) AS reject_quality,
