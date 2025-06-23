@@ -101,8 +101,27 @@ class CardModel {
         $stmt->bind_param('i', $cardId);
         $stmt->execute();
         $result = $stmt->get_result();
-        return $result->fetch_assoc();
+        $card = $result->fetch_assoc();
+
+        // Ensure all fields have a default value
+        if ($card) {
+            return [
+                'id' => $card['id'] ?? null,
+                'name' => $card['name'] ?? 'N/A',
+                'bank_id' => $card['bank_id'] ?? null,
+                'association' => $card['association'] ?? 'N/A',
+                'chip_type' => $card['chip_type'] ?? 'N/A',
+                'type' => $card['type'] ?? 'N/A',
+                'expired_at' => $card['expired_at'] ?? 'N/A',
+                'quantity' => $card['quantity'] ?? 0,
+                'created_at' => $card['created_at'] ?? null,
+                'updated_at' => $card['updated_at'] ?? null,
+            ];
+        }
+
+        return null; // Return null if no card is found
     }
+
 
     public function getTransactionsByCardId($cardId) {
         $sql = " 

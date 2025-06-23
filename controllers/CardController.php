@@ -114,6 +114,7 @@ class CardController {
         
         include 'views/card/details.php';
     }
+
     
     public function viewTransactions() {
         $cardId = $_GET['card_id'] ?? null;
