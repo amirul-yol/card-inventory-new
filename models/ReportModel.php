@@ -412,8 +412,9 @@ class ReportModel {
                 t.quantity AS transaction_quantity, 
                 t.transaction_date, 
                 t.remarks, 
+                t.balance_after_transaction AS card_balance,
                 c.name AS card_name, 
-                c.quantity AS card_balance,
+                -- c.quantity AS card_balance,
                 COALESCE(SUM(r.quantity), 0) AS rejected_quantity
             FROM transactions t
             LEFT JOIN cards c ON t.card_id = c.id
