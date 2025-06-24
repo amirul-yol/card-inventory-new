@@ -132,25 +132,24 @@ class ReportController {
         $quantity = $_POST['quantity'] ?? null;
         $date = $_POST['date'] ?? null;
         $remarks = $_POST['remarks'] ?? null;
-    
+
         // Validate inputs
         if (!$cardId || !$bankId || !$quantity || !$date || !$remarks) {
             die("All fields are required.");
         }
-        
+
         // Check if the user can access this bank
         if (!$this->authController->canAccessBank($bankId)) {
             die("You do not have permission to withdraw cards for this bank.");
         }
-    
+
         // Prepare transaction details
         $transactionType = 'withdraw'; // Fixed for this operation
-        $rejectType = null; // No reject type for withdrawal
-        $verified = null; // Verified is null for now
-    
+
         $reportModel = new ReportModel();
-    
-        if ($reportModel->withdrawCard($cardId, $bankId, $quantity, $remarks, $date)) {
+
+        // Process the withdrawal and capture the result
+        if ($reportModel->withdrawCard($cardId, $bankId, $quantity, $transactionType, $date, $remarks)) {
             // Redirect to the withdraw page
             header("Location: ?path=report/withdrawCard&bank_id=$bankId&status=success");
             exit;
@@ -158,6 +157,7 @@ class ReportController {
             die("Failed to process withdrawal.");
         }
     }
+
     
     public function withdrawCardForm() {
         $cardId = $_GET['card_id'] ?? null;

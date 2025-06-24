@@ -14,6 +14,11 @@ include 'views/includes/sidebar.php';
     <h1>Withdraw Card</h1>
     <h2>Card: <?= htmlspecialchars($card['name']); ?></h2>
 
+    <!-- Error Message -->
+    <?php if (!empty($errorMessage)): ?>
+        <div class="error-message"><?= htmlspecialchars($errorMessage); ?></div>
+    <?php endif; ?>
+
     <form action="?path=report/processWithdraw" method="post">
         <!-- Hidden inputs for card_id and bank_id -->
         <input type="hidden" name="card_id" value="<?= htmlspecialchars($card['id']); ?>">
@@ -21,7 +26,7 @@ include 'views/includes/sidebar.php';
 
         <!-- Input for quantity -->
         <label for="quantity">Quantity:</label>
-        <input type="number" name="quantity" id="quantity" required min="1">
+        <input type="number" name="quantity" id="quantity" required min="1" max="<?= htmlspecialchars($card['quantity']); ?>">
 
         <!-- Input for date -->
         <label for="date">Withdrawal Date:</label>
@@ -34,10 +39,12 @@ include 'views/includes/sidebar.php';
             <option value="Production">Production</option>
         </select>
 
-        <!-- Submit button -->
+        <!-- Submit and Cancel buttons -->
         <button type="submit">Submit</button>
+        <a href="?path=report/list" class="btn btn-cancel">Cancel</a>
     </form>
 </div>
+
 
 <?php
 // Include footer

@@ -67,28 +67,48 @@ class ReportModel {
         return $rejections;
     }
 
-    public function withdrawCard($cardId, $bankId, $quantity, $withdrawType, $transactionDate) {
-        $query = "INSERT INTO transactions (card_id, bank_id, transaction_date, transaction_type, quantity, verified, remarks, created_at)
-                  VALUES (?, ?, ?, 'withdraw', ?, NULL, ?, NOW())";
-        $stmt = $this->db->prepare($query); 
-        $stmt->bind_param("iisis", $cardId, $bankId, $transactionDate, $quantity, $withdrawType);
-    
-        if ($stmt->execute()) {
-            // Update card quantity
-            $updateQuery = "UPDATE cards SET quantity = quantity - ? WHERE id = ?";
-            $updateStmt = $this->db->prepare($updateQuery);
-            $updateStmt->bind_param("ii", $quantity, $cardId);
-    
-            if ($updateStmt->execute()) {
-                return true; // Success
-            } else {
-                die("Failed to update card quantity: " . $updateStmt->error);
+    public function withdrawCard($cardId, $bankId, $quantity, $transactionType, $transactionDate, $remarks) {
+        // Start a transaction
+        $this->db->begin_transaction();
+
+        try {
+            // Get the current card quantity
+            $balanceQuery = "SELECT quantity FROM cards WHERE id = ?";
+            $balanceStmt = $this->db->prepare($balanceQuery);
+            $balanceStmt->bind_param("i", $cardId);
+            $balanceStmt->execute();
+            $balanceStmt->bind_result($currentBalance);
+            $balanceStmt->fetch();
+            $balanceStmt->close();
+
+            // Calculate the new balance
+            $newBalance = $currentBalance - $quantity;
+            if ($newBalance < 0) {
+                throw new Exception("Insufficient card balance.");
             }
-        } else {
-            die("Failed to insert withdrawal transaction: " . $stmt->error);
-        }    
+
+            // Insert transaction with the calculated balance
+            $insertQuery = "INSERT INTO transactions (card_id, bank_id, transaction_date, transaction_type, quantity, balance_after_transaction, remarks, created_at)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, NOW())";
+            $insertStmt = $this->db->prepare($insertQuery);
+            $insertStmt->bind_param("iissisi", $cardId, $bankId, $transactionDate, $transactionType, $quantity, $newBalance, $remarks);
+            $insertStmt->execute();
+
+            // Update the card's quantity
+            $updateQuery = "UPDATE cards SET quantity = ? WHERE id = ?";
+            $updateStmt = $this->db->prepare($updateQuery);
+            $updateStmt->bind_param("ii", $newBalance, $cardId);
+            $updateStmt->execute();
+
+            // Commit the transaction
+            $this->db->commit();
+            return true;
+        } catch (Exception $e) {
+            // Rollback the transaction on failure
+            $this->db->rollback();
+            die("Error processing withdrawal: " . $e->getMessage());
+        }
     }
-    
 
     public function getCardsByBankId($bankId) {
         $query = "SELECT id, name, quantity, chip_type, type FROM cards WHERE bank_id = ?";
