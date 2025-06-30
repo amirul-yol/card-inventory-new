@@ -499,7 +499,7 @@ class ReportController {
             if ($rejectedAmount <= 0 || $rejectedAmount > $transaction['quantity']) {
                 die("Invalid rejected amount.");
             }
-            if (!in_array($reason, ['System Error', 'Quality Error'])) {
+            if (!in_array($reason, ['System Error', 'Quality'])) {
                 die("Invalid rejection reason.");
             }
 

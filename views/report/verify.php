@@ -164,7 +164,7 @@ include 'views/includes/sidebar.php';
             row.addEventListener('mouseover', function (e) {
                 const details = JSON.parse(this.dataset.details);
                 messageBox.innerHTML = `
-                    <strong>Quality Error:</strong> ${details.quality || 0}<br>
+                    <strong>Quality:</strong> ${details.quality || 0}<br>
                     <strong>System Error:</strong> ${details.system || 0}
                 `;
                 messageBox.style.left = `${e.pageX + 10}px`;

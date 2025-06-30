@@ -42,7 +42,7 @@ include 'views/includes/sidebar.php';
         <label for="reason">Reason:</label>
         <select id="reason" name="reason" required>
             <option value="System Error">System Error</option>
-            <option value="Quality Error">Quality Error</option>
+            <option value="Quality">Quality</option>
         </select>
 
         <button type="submit" name="submit_rejection" class="btn">Submit</button>

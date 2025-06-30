@@ -475,7 +475,7 @@ class ReportModel {
 
         while ($row = $result->fetch_assoc()) {
             // Map database values to expected keys
-            if ($row['reason'] === 'Quality Error') {
+            if ($row['reason'] === 'Quality') {
                 $details['quality'] = (int)$row['total_quantity'];
             } elseif ($row['reason'] === 'System Error') {
                 $details['system'] = (int)$row['total_quantity'];
